@@ -74,120 +74,131 @@
 
 
 #' @export
-plotQQ <- function(x, qdist=stats::qnorm, main=NULL, xlab=NULL, ylab=NULL, datax=FALSE, add=FALSE,
+plotQQ <- function(x, qdist=stats::qnorm, main=NULL, xlab=NULL, ylab=NULL, 
+                   datax=FALSE, add=FALSE,
                    args.qqline=NULL, conf.level=0.95, args.cband = NULL, ...) {
   
-  # qqplot for an optional distribution
-  
-  # example:
-  # y <- rexp(100, 1/10)
-  # plotQQ(y, function(p) qexp(p, rate=1/10))
-  
-  y <- sort(x)
-  p <- stats::ppoints(y)
-  x <- qdist(p)
-  
-  if(datax){
-    xy <- x
-    x <- y
-    y <- xy
-    rm(xy)
-  }
-  
-  if(is.null(main)) main <- gettextf("Q-Q-Plot (%s)", deparse(substitute(qdist)))
-  if(is.null(xlab)) xlab <- "Theoretical Quantiles"
-  if(is.null(ylab)) ylab <- "Sample Quantiles"
-  
-  if(!add)
-    plot(x=x, y, main=main, xlab=xlab, ylab=ylab, type="n", ...)
-  
-  # add confidence band if desired
-  if (!(is.na(conf.level) || identical(args.cband, NA)) ) {
-    
-    # cix <- qdist(ppoints(x))
-    # ciy <- replicate(1000, sort(qdist(runif(length(x)))))
-    # ci <- apply(ciy, 1, quantile, c(-1, 1) * conf.level/2 + 0.5)
-    
-    args.cband1 <- list(col = alpha(Pal()[1], 0.25), border = NA)
-    if (!is.null(args.cband))
-      args.cband1[names(args.cband)] <- args.cband
-    
-    # (x, distribution = qnorm,
-    #  conf = 0.95, conf.method = "both",
-    #  reference.line.method = "quartiles") {
 
-    ci <- .create.qqplot.fit.confidence.interval(
-                    y, distribution = qdist, 
-                    conf=conf.level, conf.method = "pointwise");
+  .withGraphicsState({
+
+    # qqplot for an optional distribution
     
-    do.call("drawBand", c(args.cband1,
-                          list(x = c(ci$z, rev(ci$z))),
-                          list(y = c(ci$upper.pw, rev(ci$lower.pw)) )
-    ))
+    # example:
+    # y <- rexp(100, 1/10)
+    # plotQQ(y, function(p) qexp(p, rate=1/10))
     
-  }
-  
-  points(x=x, y=y, ...)
-  
-  # John Fox implements an envelope option in car::qqplot, in the sense of:
-  #   (unfortunately using ddist...)
-  #
-  #   # add qqline if desired
-  #   if(!identical(args.band, NA)) {
-  #     n <- length(x)
-  #     zz <- qnorm(1 - (1 - args.band$conf.level) / 2)
-  #     SE <- (slope / d.function(z, ...)) * sqrt(p * (1 - p) / n)
-  #     fit.value <- int + slope * z
-  #
-  #     upper <- fit.value + zz * SE
-  #     lower <- fit.value - zz * SE
-  #
-  #     lines(z, upper, lty = 2, lwd = lwd, col = col.lines)
-  #     lines(z, lower, lty = 2, lwd = lwd, col = col.lines)
-  #   }
-  
-  # example in qqplot
-  #
-  # ## "QQ-Chisquare" : --------------------------
-  # y <- rchisq(500, df = 3)
-  # ## Q-Q plot for Chi^2 data against true theoretical distribution:
-  # qqplot(qchisq(ppoints(500), df = 3), y,
-  #        main = expression("Q-Q plot for" ~~ {chi^2}[nu == 3]))
-  # qqline(y, distribution = function(p) qchisq(p, df = 3),
-  #        prob = c(0.1, 0.6), col = 2)
-  # mtext("qqline(*, dist = qchisq(., df=3), prob = c(0.1, 0.6))")
-  
-  
-  # add qqline if desired
-  if(!identical(args.qqline, NA)) {
     
-    # define default arguments for ci.band
-    args.qqline1 <- list(probs = c(0.25, 0.75), qtype=7, col=par("fg"), 
-                         lwd=par("lwd"), lty=par("lty"))
-    # override default arguments with user defined ones
-    if (!is.null(args.qqline)) args.qqline1[names(args.qqline)] <- args.qqline
+    # resolve potential pars given in the dots...
+    par(
+      main = .resolvePar("main", main, "Q-Q Plot"),
+      xlab = .resolvePar("xlab", xlab, "Theoretical Quantiles"),
+      ylab = .resolvePar("ylab", ylab, "Sample Quantiles")
+    )
+    .applyParFromDots(...)
     
-    # estimate qqline, instead of set it to abline(a = 0, b = 1)
-    # plot qqline through the 25% and 75% quantiles (same as qqline does for normal dist)
-    ly <- stats::quantile(y, prob=args.qqline1[["probs"]], 
-                   type=args.qqline1[["qtype"]], na.rm = TRUE)
-    lx <- qdist(args.qqline1[["probs"]])
+    y <- sort(x)
+    p <- stats::ppoints(y)
+    x <- qdist(p)
     
-    slope <- diff(ly) / diff(lx)
-    int <- ly[1L] - slope * lx[1L]
-    do.call("abline", 
-            c(args.qqline1[c("col","lwd","lty")], list(a=int, b=slope)) )
+    if(datax){
+      xy <- x
+      x <- y
+      y <- xy
+      rm(xy)
+    }
     
-  }
+    if(is.null(main)) main <- gettextf("Q-Q-Plot (%s)", deparse(substitute(qdist)))
+    if(is.null(xlab)) xlab <- "Theoretical Quantiles"
+    if(is.null(ylab)) ylab <- "Sample Quantiles"
+    
+    if(!add)
+      plot(x=x, y, main=main, xlab=xlab, ylab=ylab, type="n", ...)
+    
+    # add confidence band if desired
+    if (!(is.na(conf.level) || identical(args.cband, NA)) ) {
+      
+      # cix <- qdist(ppoints(x))
+      # ciy <- replicate(1000, sort(qdist(runif(length(x)))))
+      # ci <- apply(ciy, 1, quantile, c(-1, 1) * conf.level/2 + 0.5)
+      
+      args.cband1 <- list(col = alpha(Pal()[1], 0.25), border = NA)
+      if (!is.null(args.cband))
+        args.cband1[names(args.cband)] <- args.cband
+      
+      # (x, distribution = qnorm,
+      #  conf = 0.95, conf.method = "both",
+      #  reference.line.method = "quartiles") {
   
-  if(!is.null(.getOption("stamp")))
-    stamp()
-  
+      ci <- .create.qqplot.fit.confidence.interval(
+                      y, distribution = qdist, 
+                      conf=conf.level, conf.method = "pointwise");
+      
+      do.call("drawBand", c(args.cband1,
+                            list(x = c(ci$z, rev(ci$z))),
+                            list(y = c(ci$upper.pw, rev(ci$lower.pw)) )
+      ))
+      
+    }
+    
+    points(x=x, y=y, ...)
+    
+    # John Fox implements an envelope option in car::qqplot, in the sense of:
+    #   (unfortunately using ddist...)
+    #
+    #   # add qqline if desired
+    #   if(!identical(args.band, NA)) {
+    #     n <- length(x)
+    #     zz <- qnorm(1 - (1 - args.band$conf.level) / 2)
+    #     SE <- (slope / d.function(z, ...)) * sqrt(p * (1 - p) / n)
+    #     fit.value <- int + slope * z
+    #
+    #     upper <- fit.value + zz * SE
+    #     lower <- fit.value - zz * SE
+    #
+    #     lines(z, upper, lty = 2, lwd = lwd, col = col.lines)
+    #     lines(z, lower, lty = 2, lwd = lwd, col = col.lines)
+    #   }
+    
+    # example in qqplot
+    #
+    # ## "QQ-Chisquare" : --------------------------
+    # y <- rchisq(500, df = 3)
+    # ## Q-Q plot for Chi^2 data against true theoretical distribution:
+    # qqplot(qchisq(ppoints(500), df = 3), y,
+    #        main = expression("Q-Q plot for" ~~ {chi^2}[nu == 3]))
+    # qqline(y, distribution = function(p) qchisq(p, df = 3),
+    #        prob = c(0.1, 0.6), col = 2)
+    # mtext("qqline(*, dist = qchisq(., df=3), prob = c(0.1, 0.6))")
+    
+    
+    # add qqline if desired
+    if(!identical(args.qqline, NA)) {
+      
+      # define default arguments for ci.band
+      args.qqline1 <- list(probs = c(0.25, 0.75), qtype=7, col=par("fg"), 
+                           lwd=par("lwd"), lty=par("lty"))
+      # override default arguments with user defined ones
+      if (!is.null(args.qqline)) args.qqline1[names(args.qqline)] <- args.qqline
+      
+      # estimate qqline, instead of set it to abline(a = 0, b = 1)
+      # plot qqline through the 25% and 75% quantiles (same as qqline does for normal dist)
+      ly <- stats::quantile(y, prob=args.qqline1[["probs"]], 
+                     type=args.qqline1[["qtype"]], na.rm = TRUE)
+      lx <- qdist(args.qqline1[["probs"]])
+      
+      slope <- diff(ly) / diff(lx)
+      int <- ly[1L] - slope * lx[1L]
+      do.call("abline", 
+              c(args.qqline1[c("col","lwd","lty")], list(a=int, b=slope)) )
+      
+    }
+    
+  })
 }
 
 
 
-
+# == internal helper functions ========================================================
 
 # The BoutrosLab.statistics.general package is copyright (c) 2012 Ontario Institute for Cancer Research (OICR)
 # This package and its accompanying libraries is free software; you can redistribute it and/or modify it under the terms of the GPL

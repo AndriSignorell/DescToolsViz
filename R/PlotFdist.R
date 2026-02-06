@@ -511,8 +511,8 @@ plotFdist <- function (x, main = deparse(substitute(x)), xlab = ""
     # reset stamp option to optionally place the stamp on the last plot
     options(opt_stamp)
     
-    if(!is.null(.getOption("stamp")))
-      stamp()
+    # if(!is.null(.getOption("stamp")))
+    #   stamp()
   
     # close: .withGraphicsState
     })

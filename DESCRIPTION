@@ -2,9 +2,9 @@ Package: DescToolsGraphics
 Title: Descriptive Statistics Graphics and Utilities
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
-License: MIT + file LICENSE
+    person("Andri", "Signorell", , "andri@signorell.net", role = c("aut", "cre"))
+Description: Provides plots and graphic routines used in DescToolsX.
+License: GPL (>= 2)
 Encoding: UTF-8
 LinkingTo: Rcpp
 Roxygen: list(markdown = TRUE)
