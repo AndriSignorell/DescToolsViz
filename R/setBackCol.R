@@ -19,15 +19,15 @@
 #' 
 #' # use two different colors for the figure region and the plot region
 #' plot(x = rnorm(100), col="blue", cex=1.2, pch=16,
-#'      panel.first={setBgCol(c("red", "lightyellow"))
+#'      panel.first={setBackCol(c("red", "lightyellow"))
 #'                   grid()})
 #' 
 
 
 #' @export
-setBgCol <- function(col="grey", region=c("plot", "figure"), border=NA) {
+setBackCol <- function(col="grey", region=c("plot", "figure"), border=NA) {
   
-  .setBgCol <- function(col="grey", region="plot", border=NA) {
+  .setBackCol <- function(col="grey", region="plot", border=NA) {
     
     if(region=="plot")
       rect(par("usr")[1], par("usr")[3], par("usr")[2], par("usr")[4], 
@@ -46,12 +46,12 @@ setBgCol <- function(col="grey", region=c("plot", "figure"), border=NA) {
   
   if(length(col)==1){
     region <- match.arg(region)
-    .setBgCol(col=col, region=region, border=border)
+    .setBackCol(col=col, region=region, border=border)
     
   } else {
-    arg <- .recycle(col=col, region=region, border=border)
+    arg <- recycle(col=col, region=region, border=border)
     for(i in attr(arg, "maxdim"):1){
-      .setBgCol(col=arg$col[i], region=arg$region[i], border=arg$border[i])
+      .setBackCol(col=arg$col[i], region=arg$region[i], border=arg$border[i])
     }
     
   }

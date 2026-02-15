@@ -127,7 +127,7 @@ drawCircle <- function (x = 0, y = x, r.out = 1, r.in = 0, theta.1 = 0,
     invisible(list(x = ptx, y = pty))
   }
   
-  lgp <- .recycle(x=x, y=y, r.in = r.in, r.out = r.out,
+  lgp <- recycle(x=x, y=y, r.in = r.in, r.out = r.out,
                  theta.1 = theta.1, theta.2 = theta.2, border = border,
                  col = col, lty = lty, lwd = lwd, nv = nv)
   lst <- list()

@@ -131,7 +131,7 @@ plotWeb <- function(m, col=NULL, lty=NULL,
     b <- 10
     # d.m$d.sc <- (b-a) * (min(d.m$d)-a) + (b-a) /diff(range(d.m$d)) * d.m$d
     
-    i <- .combPairs(1:dim(m)[1])
+    i <- combPairs(1:dim(m)[1])
     d.m <- data.frame(from=colnames(m)[i[,1]], from=colnames(m)[i[, 2]], d=m[lower.tri(m)],
                       from.x=xy[[1]][i[,2]], to.x=xy[[1]][i[,1]],
                       from.y=xy[[2]][i[,2]], to.y=xy[[2]][i[,1]])

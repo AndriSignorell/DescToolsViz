@@ -69,11 +69,14 @@ across subplots.
 \examples{
 # Example Desc.factor object
 x <- structure(list(
+  meta = list(main="myTitle",
+              plotit = TRUE,
+              label = NULL, 
+              class = "character", 
+              classlabel = "character"),
   xname = "sample(letters[1:4], size = 50, replace = TRUE)", 
-  label = NULL, class = "character", classlabel = "character", 
   length = 50L, n = 50L, NAs = 0L, 
-  main = "sample(letters[1:4], size = 50, replace = TRUE)", 
-  plotit = TRUE, digits = NULL, levels = 0L, 
+  digits = NULL, levels = 0L, 
   unique = 4L, dupes = TRUE, maxrows = 12, ord = "desc", 
   freq = structure(list(
     level = c("d", "c", "a", "b"), freq = c(19L, 15L, 10L, 6L), 

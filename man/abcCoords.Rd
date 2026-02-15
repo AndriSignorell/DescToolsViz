@@ -58,7 +58,7 @@ sapply(c("topleft", "top", "topright", "left", "center",
 
 
 plot(x = rnorm(100), type="n", xlab="", ylab="",
-     panel.first={setBgCol(c("red", "lightyellow"))
+     panel.first={setBackCol(c("red", "lightyellow"))
              grid()})
 xy <- abcCoords("topleft", region = "plot")
 par(xpd=NA)

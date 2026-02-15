@@ -126,11 +126,11 @@ barText <- function(height, b, labels=height, beside = FALSE, horiz = FALSE,
       
       if(pos=="topout"){
         x <- height + offset + 1.2 * sign(height) * par("cxy")[1] * cex
-        adjx <- .recode(x = factor(sign(x+offset)), "0"=1, "1"=-1, num = TRUE)
+        adjx <- recodeX(x = factor(sign(x+offset)), "0"=1, "1"=-1, num = TRUE)
       }
       else if(pos=="topin") {
         x <- height + offset - 1.2 * sign(height) * par("cxy")[1] * cex
-        adjx <- .recode(x = factor(sign(x+offset)), "1"=1, "0"=-1, num = TRUE)
+        adjx <- recodeX(x = factor(sign(x+offset)), "1"=1, "0"=-1, num = TRUE)
       }
       else if(pos=="mid"){
         x <- offset + height / 2
@@ -138,14 +138,14 @@ barText <- function(height, b, labels=height, beside = FALSE, horiz = FALSE,
       }
       else if(pos=="bottomout") {
         x <- offset - 1.2 * sign(height) * par("cxy")[1] * cex
-        adjx <- .recode(x = factor(sign(x+offset)), "1"=1, "0"=-1, num = TRUE)
+        adjx <- recodeX(x = factor(sign(x+offset)), "1"=1, "0"=-1, num = TRUE)
       }
       else if(pos=="bottomin") {
         x <- offset + 1.2 * sign(height) * par("cxy")[1] * cex
-        adjx <- .recode(x = factor(sign(x+offset)), "0"=1, "1"=-1, num = TRUE)
+        adjx <- recodeX(x = factor(sign(x+offset)), "0"=1, "1"=-1, num = TRUE)
       }
       
-      pp <- .recycle(b=b, x=x, labels=labels, adjx=adjx, adjy=adjy)
+      pp <- recycle(b=b, x=x, labels=labels, adjx=adjx, adjy=adjy)
       
       for(i in seq(attr(pp, "maxdim"))){
         with(pp, .btext(y=b[i], x=x[i], labels=labels[i], 
@@ -201,7 +201,7 @@ barText <- function(height, b, labels=height, beside = FALSE, horiz = FALSE,
       adjx <- 1
       
     } else if(pos=="mid"){
-      x <- t(apply(offset + height, 2, .midx, incl.zero=TRUE, cumulate=TRUE))
+      x <- t(apply(offset + height, 2, midx, incl.zero=TRUE, cumulate=TRUE))
       adjx <- 0.5
       
     } else if(pos=="bottomin"){

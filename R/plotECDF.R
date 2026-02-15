@@ -81,7 +81,7 @@ plotECDF <- function(x, breaks=NULL, col=Pal()[1],
                                      c("cex", "cex.axis", "col.axis", "family", 
                                        "fg", "font", "font.axis", "las", "mgp", 
                                        "srt", "tck", "tcl", "yaxp", "yaxs", "yaxt")),
-                      subset = validargs %.nin% c("...","","col"))      # omit ... and empty
+                      subset = validargs %nin% c("...","","col"))      # omit ... and empty
 
   # the defaults
   axargs1 <- list(side = 2, at = seq(0, 1, 0.25),

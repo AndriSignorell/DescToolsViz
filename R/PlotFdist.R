@@ -353,7 +353,7 @@ plotFdist <- function (x, main = deparse(substitute(x)), xlab = ""
       ticks <- axTicks(2)
       n <- max(floor(log(ticks, base = 10)))    # highest power of ten
       if(abs(n)>2) {
-        lab <- format(ticks * 10^(-n), digits=max(.nDec(as.character(zapsmall(ticks*10^(-n))))))
+        lab <- format(ticks * 10^(-n), digits=max(nDec(as.character(zapsmall(ticks*10^(-n))))))
         axis(side=2, at=ticks, labels=lab, las=las, cex.axis=par("cex.axis"))
         
         text(x=par("usr")[1], y=par("usr")[4], bquote(~~~x~10^.(n)), xpd=NA, 

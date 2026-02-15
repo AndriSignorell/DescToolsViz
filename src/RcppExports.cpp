@@ -10,9 +10,35 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// between_num
+LogicalVector between_num(NumericVector x, NumericVector from, NumericVector to, bool left_closed, bool right_closed);
+RcppExport SEXP _DescToolsViz_between_num(SEXP xSEXP, SEXP fromSEXP, SEXP toSEXP, SEXP left_closedSEXP, SEXP right_closedSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type x(xSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type from(fromSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type to(toSEXP);
+    Rcpp::traits::input_parameter< bool >::type left_closed(left_closedSEXP);
+    Rcpp::traits::input_parameter< bool >::type right_closed(right_closedSEXP);
+    rcpp_result_gen = Rcpp::wrap(between_num(x, from, to, left_closed, right_closed));
+    return rcpp_result_gen;
+END_RCPP
+}
+// conv_DecToBin
+CharacterVector conv_DecToBin(IntegerVector n);
+RcppExport SEXP _DescToolsViz_conv_DecToBin(SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< IntegerVector >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(conv_DecToBin(n));
+    return rcpp_result_gen;
+END_RCPP
+}
 // pSmirnov2x
 double pSmirnov2x(double statistic, int nx, int ny);
-RcppExport SEXP _DescToolsGraphics_pSmirnov2x(SEXP statisticSEXP, SEXP nxSEXP, SEXP nySEXP) {
+RcppExport SEXP _DescToolsViz_pSmirnov2x(SEXP statisticSEXP, SEXP nxSEXP, SEXP nySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -25,7 +51,7 @@ END_RCPP
 }
 // pKS2
 NumericVector pKS2(NumericVector statistic, double tol);
-RcppExport SEXP _DescToolsGraphics_pKS2(SEXP statisticSEXP, SEXP tolSEXP) {
+RcppExport SEXP _DescToolsViz_pKS2(SEXP statisticSEXP, SEXP tolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -37,7 +63,7 @@ END_RCPP
 }
 // pKolmogorov2x
 double pKolmogorov2x(double statistic, int n);
-RcppExport SEXP _DescToolsGraphics_pKolmogorov2x(SEXP statisticSEXP, SEXP nSEXP) {
+RcppExport SEXP _DescToolsViz_pKolmogorov2x(SEXP statisticSEXP, SEXP nSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -47,15 +73,29 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// roman2int_cpp
+IntegerVector roman2int_cpp(CharacterVector x);
+RcppExport SEXP _DescToolsViz_roman2int_cpp(SEXP xSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< CharacterVector >::type x(xSEXP);
+    rcpp_result_gen = Rcpp::wrap(roman2int_cpp(x));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_DescToolsGraphics_pSmirnov2x", (DL_FUNC) &_DescToolsGraphics_pSmirnov2x, 3},
-    {"_DescToolsGraphics_pKS2", (DL_FUNC) &_DescToolsGraphics_pKS2, 2},
-    {"_DescToolsGraphics_pKolmogorov2x", (DL_FUNC) &_DescToolsGraphics_pKolmogorov2x, 2},
+    {"_DescToolsViz_between_num", (DL_FUNC) &_DescToolsViz_between_num, 5},
+    {"_DescToolsViz_conv_DecToBin", (DL_FUNC) &_DescToolsViz_conv_DecToBin, 1},
+    {"_DescToolsViz_pSmirnov2x", (DL_FUNC) &_DescToolsViz_pSmirnov2x, 3},
+    {"_DescToolsViz_pKS2", (DL_FUNC) &_DescToolsViz_pKS2, 2},
+    {"_DescToolsViz_pKolmogorov2x", (DL_FUNC) &_DescToolsViz_pKolmogorov2x, 2},
+    {"_DescToolsViz_roman2int_cpp", (DL_FUNC) &_DescToolsViz_roman2int_cpp, 1},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_DescToolsGraphics(DllInfo *dll) {
+RcppExport void R_init_DescToolsViz(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

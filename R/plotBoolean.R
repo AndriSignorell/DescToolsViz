@@ -115,9 +115,9 @@ plot.Desc.logical <- function(x, main = NULL, xlab = "", col = NULL,
     rect(xleft = ptab[1], ybottom = 0.95, xright = 1, ytop = 1.05, col = col[2]) # green4
     
     if (confint) {
-      ci.99 <- .binomCI(tab[1], sum(tab), conf.level = 0.99)[2:3]
-      ci.95 <- .binomCI(tab[1], sum(tab), conf.level = 0.95)[2:3]
-      ci.90 <- .binomCI(tab[1], sum(tab), conf.level = 0.90)[2:3]
+      ci.99 <- .binomCI_raw(tab[1], sum(tab), conf.level = 0.99)[2:3]
+      ci.95 <- .binomCI_raw(tab[1], sum(tab), conf.level = 0.95)[2:3]
+      ci.90 <- .binomCI_raw(tab[1], sum(tab), conf.level = 0.90)[2:3]
       rect(xleft = ci.99[1], ybottom = 0.9, xright = ci.99[2], 
            ytop = 1.1, col = col[3]) # olivedrab1
       rect(xleft = ci.95[1], ybottom = 0.9, xright = ci.95[2], 

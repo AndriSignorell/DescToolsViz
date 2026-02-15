@@ -49,7 +49,7 @@ colToOpaque <- function(col, alpha=NULL, bg=NULL){
   }
   
   # recycle col and alpha
-  lst <- .recycle(rgb=lapply(col, hexToRgb), alpha=alpha)
+  lst <- recycle(rgb=lapply(col, hexToRgb), alpha=alpha)
   
   
   # algorithm:    res <- round(bg - alpha * (bg - col))
@@ -58,7 +58,7 @@ colToOpaque <- function(col, alpha=NULL, bg=NULL){
             # discard any alpha channel by only using rows 1:3
             round(bg - lst[["alpha"]][[i]] * (bg - lst[["rgb"]][[i]][1:3, ])))
   colnames(res) <- paste0(lapply(lst[["rgb"]], function(z) rgbToHex(z[1:3, ])), 
-                      .decToHex(round(lst[["alpha"]] * 255))) 
+                      decToHex(round(lst[["alpha"]] * 255))) 
   
   res <- apply(res, 2, rgbToHex)
   

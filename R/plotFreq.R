@@ -53,11 +53,14 @@
 #' @examples
 #' # Example Desc.factor object
 #' x <- structure(list(
+#'   meta = list(main="myTitle",
+#'               plotit = TRUE,
+#'               label = NULL, 
+#'               class = "character", 
+#'               classlabel = "character"),
 #'   xname = "sample(letters[1:4], size = 50, replace = TRUE)", 
-#'   label = NULL, class = "character", classlabel = "character", 
 #'   length = 50L, n = 50L, NAs = 0L, 
-#'   main = "sample(letters[1:4], size = 50, replace = TRUE)", 
-#'   plotit = TRUE, digits = NULL, levels = 0L, 
+#'   digits = NULL, levels = 0L, 
 #'   unique = 4L, dupes = TRUE, maxrows = 12, ord = "desc", 
 #'   freq = structure(list(
 #'     level = c("d", "c", "a", "b"), freq = c(19L, 15L, 10L, 6L), 
@@ -97,13 +100,13 @@ plot.Desc.factor <- function(x, main = NULL, maxlablen = 25,
     }
     
     if (max(nchar(names(tab))) > maxlablen) {
-      names(tab) <- .strTrunc(names(tab), maxlablen)
+      names(tab) <- strTrunc(names(tab), maxlablen)
     }
     wtxt <- max(strwidth(names(tab), "inch"))
     wplot <- (par("pin")[1] - wtxt) / 2
     layout(matrix(c(1, 2), nrow = 1), widths = c(wtxt + wplot, wplot) * 2.54)
     par(mai = c(1.2, max(strwidth(rev(names(tab)), "inch")) + .5, 0.2, .3) + .02)
-    if (!is.na(x$main)) par(oma = c(0, 0, 3, 0))
+    if (!is.na(x$meta$main)) par(oma = c(0, 0, 3, 0))
     
     
     switch(match.arg(arg = type, choices = c("bar", "dot")),
@@ -199,9 +202,9 @@ plot.Desc.factor <- function(x, main = NULL, maxlablen = 25,
     )
     
     
-    if (is.null(main)) main <- x$main
+    if (is.null(main)) main <- x$meta$main
     if (!is.na(main)) {
-      title(main = main %||% x$main, outer = TRUE)
+      title(main = main %||% x$meta$main, outer = TRUE)
     }
     
     if (trunc_fg) {

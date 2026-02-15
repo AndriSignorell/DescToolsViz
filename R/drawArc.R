@@ -42,7 +42,7 @@ drawArc <- function (x = 0, y = x, rx = 1, ry = rx, theta.1 = 0,
                      lwd = par("lwd"), plot = TRUE) {
   
   # recycle all params to maxdim
-  lgp <- .recycle(x=x, y=y, rx = rx, ry = ry,
+  lgp <- recycle(x=x, y=y, rx = rx, ry = ry,
                  theta.1 = theta.1, theta.2 = theta.2, nv = nv,
                  col=col, lty=lty, lwd=lwd)
   
