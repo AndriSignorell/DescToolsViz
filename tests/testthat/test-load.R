@@ -1,8 +1,8 @@
 
 
-test_that("DescToolsGraphics does not load without DescToolsX", {
+test_that("DescToolsViz does not load without DescToolsX", {
   expect_error(
-    library(DescToolsGraphics),
+    library(DescToolsViz),
     NA
   )
 })

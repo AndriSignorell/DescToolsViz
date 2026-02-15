@@ -115,7 +115,7 @@ plot.Desc.factor <- function(x, main = NULL, maxlablen = 25,
                xlim <- range(pretty(tab)) + c(-1, 1) * diff(range(pretty(tab))) * 0.04
              }
              
-             if (is.null(col)) col <- DescToolsGraphics::Pal()[1]
+             if (is.null(col)) col <- DescToolsViz::Pal()[1]
              if (is.null(border)) border <- "black"
              b <- barplot(rev(tab),
                           horiz = TRUE, border = NA, col = "white", las = 1,
@@ -155,13 +155,13 @@ plot.Desc.factor <- function(x, main = NULL, maxlablen = 25,
              if (is.null(col)) {
                col <- c(
                  rep("grey80 ", length.out = 2 * nrow(tab)),
-                 rep(DescToolsGraphics::alpha("grey80", 0.4), length.out = nrow(tab))
+                 rep(DescToolsViz::alpha("grey80", 0.4), length.out = nrow(tab))
                )
              } else {
                if (length(col) == 1) {
                  col <- c(
                    rep(col, length.out = 2 * nrow(tab)),
-                   rep(DescToolsGraphics::alpha(col, 0.3), length.out = nrow(tab))
+                   rep(DescToolsViz::alpha(col, 0.3), length.out = nrow(tab))
                  )
                } else {
                  col <- rep(col, length.out = 3 * nrow(tab))
@@ -215,7 +215,7 @@ plot.Desc.factor <- function(x, main = NULL, maxlablen = 25,
     }
     
     # if (!is.null(.getOption("stamp"))) {
-    #   DescToolsGraphics::stamp()
+    #   DescToolsViz::stamp()
     # }
     
     # close .withGraphicsState

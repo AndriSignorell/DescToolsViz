@@ -1,5 +1,5 @@
 
-#' @useDynLib DescToolsGraphics, .registration = TRUE
+#' @useDynLib DescToolsViz, .registration = TRUE
 
 #' @importFrom Rcpp sourceCpp
 #' 

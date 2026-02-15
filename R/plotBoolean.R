@@ -85,7 +85,7 @@ plot.Desc.logical <- function(x, main = NULL, xlab = "", col = NULL,
                 deparse(substitute(x))
 
     if (is.null(col)) {
-      col <- c(DescToolsGraphics::Pal()[1:2], "grey80", "grey60", "grey40")
+      col <- c(DescToolsViz::Pal()[1:2], "grey80", "grey60", "grey40")
     } else {
       col <- rep(col, length.out = 5)
     }

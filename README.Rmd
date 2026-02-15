@@ -13,21 +13,21 @@ knitr::opts_chunk$set(
 )
 ```
 
-# DescToolsGraphics
+# DescToolsViz
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/AndriSignorell/DescToolsGraphics/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/AndriSignorell/DescToolsGraphics/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/AndriSignorell/DescToolsViz/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/AndriSignorell/DescToolsViz/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-The goal of DescToolsGraphics is to ...
+The goal of DescToolsViz is to ...
 
 ## Installation
 
-You can install the development version of DescToolsGraphics from [GitHub](https://github.com/) with:
+You can install the development version of DescToolsViz from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("pak")
-pak::pak("AndriSignorell/DescToolsGraphics")
+pak::pak("AndriSignorell/DescToolsViz")
 ```
 
 ## Example
@@ -35,7 +35,7 @@ pak::pak("AndriSignorell/DescToolsGraphics")
 This is a basic example which shows you how to solve a common problem:
 
 ```{r example}
-library(DescToolsGraphics)
+library(DescToolsViz)
 ## basic example code
 ```
 
