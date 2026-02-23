@@ -76,7 +76,7 @@ cbind(strAlign(x, sep="\\\\c"))
 }
 \seealso{
 \code{\link{strTrim}}, \code{\link{strPad}},
-\code{\link[DescToolsX]{fm}}
+\code{\link[DescToolsViz]{fm}}
 }
 \author{
 Andri Signorell \href{mailto:andri@signorell.net}{andri@signorell.net}

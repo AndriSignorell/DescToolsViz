@@ -7,7 +7,7 @@
 #' the other side already calculates some basic statistics. 
 #' 
 #' The levels of a factor and describing variable labels (as created by
-#' [DescToolsX::Label()]) will be wrapped within the columns.
+#' [Label()]) will be wrapped within the columns.
 #' 
 #' The first 4 columns are printed with the needed fix width, the last 2
 #' (Levels and Labels) are wrapped within the column. The width is calculated
@@ -42,7 +42,7 @@
 #' 
 #' @concept Desc
 #' @family Statistical summary functions
-#' @seealso [utils::str()], [base::summary()], [DescToolsX::columnWrap()], 
+#' @seealso [utils::str()], [base::summary()], [columnWrap()], 
 #' [DescToolsX::Desc()]
 #' 
 #' 

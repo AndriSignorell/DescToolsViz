@@ -14,6 +14,7 @@ barText(
   adj = NULL,
   pos = c("topout", "topin", "mid", "bottomin", "bottomout"),
   offset = 0,
+  col = NULL,
   ...
 )
 }
@@ -48,6 +49,8 @@ placed on top of the bars (inside or outside) or at the bottom of the bars
 
 \item{offset}{a vector indicating how much the bars should be shifted
 relative to the x axis.}
+
+\item{col}{the color and to be used, possibly a vector (default in par("col")).}
 
 \item{\dots}{the dots are passed to the \code{\link{boxedText}}.}
 }

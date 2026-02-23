@@ -46,7 +46,7 @@
 #' @return a character vector containing the aligned strings 
 #' @author Andri Signorell <andri@@signorell.net> 
 #' @seealso \code{\link{strTrim}}, \code{\link{strPad}}, 
-#' \code{\link[DescToolsX]{fm}}
+#' \code{\link[DescToolsViz]{fm}}
 #' @keywords character
 #' @examples
 #' 

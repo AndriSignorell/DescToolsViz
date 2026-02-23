@@ -41,4 +41,4 @@ combPairs(which(sapply(CO2, is.numeric)), which(sapply(CO2, is.factor)))
 \author{
 Andri Signorell \href{mailto:andri@signorell.net}{andri@signorell.net}
 }
-\keyword{manip}
+\concept{combinatorics}

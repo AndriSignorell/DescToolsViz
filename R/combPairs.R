@@ -21,7 +21,9 @@
 #' @seealso \code{\link{combn}}, \code{\link{expand.grid}},
 #' \code{\link{outer}}, \code{\link{lower.tri}} 
 #' 
-#' @keywords manip
+#' @family combinatorics
+#' @concept combinatorics
+#' 
 #' @examples
 #' 
 #' combPairs(letters[1:4])

@@ -11,7 +11,7 @@ boxedText(x, ...)
 \method{boxedText}{default}(
   x,
   y = NULL,
-  labels = seq_along(x),
+  labels = NULL,
   adj = NULL,
   pos = NULL,
   offset = 0.5,
@@ -119,8 +119,15 @@ given by x and y, surrounded by a rectangle.
 
 canvas(xpd=TRUE)
 
-boxedText(0, 0, adj=0, label="This is boxed text", srt=seq(0,360,20), xpad=.3, ypad=.3)
+boxedText(0, 0, adj=0, label="This is boxed text", srt=seq(0,360,20), 
+          xpad=.3, ypad=.3)
 points(0,0, pch=15)
+
+plot(mpg ~ hp, data=mtcars, type="n", main="MT cars mpg/hp (log-log)", 
+     panel.first=quote(grid()), las=1, log="xy")
+boxedText(mpg ~ hp, data=mtcars, 
+          labels=rownames(mtcars), cex=0.6, border=FALSE, bg="grey90")
+
 
 }
 \seealso{

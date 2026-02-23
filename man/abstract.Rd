@@ -58,7 +58,7 @@ the other side already calculates some basic statistics.
 }
 \details{
 The levels of a factor and describing variable labels (as created by
-\code{\link[DescToolsX:Label]{DescToolsX::Label()}}) will be wrapped within the columns.
+\code{\link[=Label]{Label()}}) will be wrapped within the columns.
 
 The first 4 columns are printed with the needed fix width, the last 2
 (Levels and Labels) are wrapped within the column. The width is calculated
@@ -84,7 +84,7 @@ abstract(d.mydata)
 
 }
 \seealso{
-\code{\link[utils:str]{utils::str()}}, \code{\link[base:summary]{base::summary()}}, \code{\link[DescToolsX:columnWrap]{DescToolsX::columnWrap()}},
+\code{\link[utils:str]{utils::str()}}, \code{\link[base:summary]{base::summary()}}, \code{\link[=columnWrap]{columnWrap()}},
 \code{\link[DescToolsX:Desc]{DescToolsX::Desc()}}
 }
 \author{

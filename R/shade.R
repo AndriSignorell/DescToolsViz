@@ -74,7 +74,8 @@ shade <- function(expr, col=par("fg"), breaks, density=10, n=101, xname = "x", .
     
   }
   
-  pars <- recycle(from=head(breaks, -1), to=tail(breaks, -1), col=col, density=density)
+  pars <- recycle(from=head(breaks, -1), to=tail(breaks, -1), 
+                  col=col, density=density, strict=FALSE)
   
   lst <- list()
   for(i in 1:attr(pars, "maxdim"))

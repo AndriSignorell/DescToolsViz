@@ -70,6 +70,7 @@
 #'
 
 #' @author Andri Signorell <andri@@signorell.net> 
+#' 
 #' @seealso \code{\link{spreadOut}}, similar function in package \pkg{plotrix}
 #' \code{\link[plotrix]{boxed.labels}} (lacking rotation option) 
 #' @keywords aplot misc
@@ -77,8 +78,15 @@
 #' 
 #' canvas(xpd=TRUE)
 #' 
-#' boxedText(0, 0, adj=0, label="This is boxed text", srt=seq(0,360,20), xpad=.3, ypad=.3)
+#' boxedText(0, 0, adj=0, label="This is boxed text", srt=seq(0,360,20), 
+#'           xpad=.3, ypad=.3)
 #' points(0,0, pch=15)
+#' 
+#' plot(mpg ~ hp, data=mtcars, type="n", main="MT cars mpg/hp (log-log)", 
+#'      panel.first=quote(grid()), las=1, log="xy")
+#' boxedText(mpg ~ hp, data=mtcars, 
+#'           labels=rownames(mtcars), cex=0.6, border=FALSE, bg="grey90")
+#' 
 #' 
 
 #' @rdname boxedText
@@ -90,123 +98,187 @@ boxedText <- function(x, ...)
 
 #' @rdname boxedText
 #' @export
-boxedText.default <- function(x, y = NULL, labels = seq_along(x), adj = NULL,
-                              pos = NULL, offset = 0.5, vfont = NULL,
-                              cex = 1, col = NULL, font = NULL, srt = 0, xpad = 0.2, ypad=0.2,
-                              density = NULL, angle = 45,
-                              bg = NA, border = par("fg"), lty = par("lty"), lwd = par("lwd"), ...) {
+boxedText.default <- function(
+    x, y = NULL,
+    labels = NULL,
+    adj = NULL, pos = NULL, offset = 0.5,
+    vfont = NULL, cex = 1, col = NULL, font = NULL,
+    srt = 0, xpad = 0.2, ypad = 0.2,
+    density = NULL, angle = 45,
+    bg = NA, border = par("fg"),
+    lty = par("lty"), lwd = par("lwd"),
+    ...
+) {
   
+  # ------------------------------------------------------------
+  # Koordinaten normalisieren (wie text.default)
+  # ------------------------------------------------------------
+  coords <- xy.coords(x, y, recycle = TRUE, setLab = FALSE)
   
-  .boxedText <- function(x, y = NULL, labels = seq_along(x), adj = NULL,
-                         pos = NA, offset = 0.5, vfont = NULL,
-                         cex = 1, col = NULL, font = NULL, srt = 0, xpad = 0.2, ypad=0.2,
-                         density = NULL, angle = 45,
-                         bg = NA, border = NULL, lty = par("lty"), lwd = par("lwd"), ...) {
-    
-    # we don't manage to remove the color otherwise
-    if(is.na(bg)) density <- 0
-    
-    if(is.na(pos)) pos <- NULL   # we have to change default NULL to NA to be able to repeat it
-    if(is.na(vfont)) vfont <- NULL
-    
-    w <- strwidth(labels, cex=cex, font=font, vfont=vfont)
-    h <- strheight(labels, cex=cex, font=font, vfont=vfont)
-    
-    if(length(adj) == 1) adj <- c(adj, 0.5)
-    
-    xl <- x - adj[1] * w - strwidth("M", cex=cex, font=font, vfont=vfont) * xpad
-    xr <- xl + w + 2*strwidth("M", cex=cex, font=font, vfont=vfont) * xpad
-    
-    yb <- y - adj[2] * h - strheight("M", cex=cex, font=font, vfont=vfont) * ypad
-    yt <- yb + h + 2*strheight("M", cex=cex, font=font, vfont=vfont) * ypad
-    
-    xy <- rotate(x=c(xl,xl,xr,xr), y=c(yb,yt,yt,yb), mx=x, my=y, theta=degToRad(srt))
-    polygon(x=xy$x, y=xy$y, col=bg, density=density, angle=angle, border=border, lty=lty, lwd=lwd, ...)
-    
-    text(x=x, y=y, labels=labels, adj=adj, pos=pos, offset=offset, vfont=vfont, cex=cex, col=col, font=font, srt=srt)
-  }
+  if (is.null(labels))
+    labels <- seq_along(coords$x)
   
-  x <- xy.coords(x, y, recycle = TRUE, setLab = FALSE)
+  # ------------------------------------------------------------
+  # Recycling aller Parameter über DescToolsViz::recycle()
+  # ------------------------------------------------------------
+  pars <- recycle(
+    x       = coords$x,
+    y       = coords$y,
+    labels  = labels,
+    col     = if (is.null(col)) par("fg") else col,
+    font    = if (is.null(font)) 1 else font,
+    cex     = cex,
+    srt     = srt,
+    bg      = bg,
+    border  = border,
+    lty     = lty,
+    lwd     = lwd,
+    density = if (is.null(density)) NA else density,
+    angle   = angle
+  )
   
-  if(is.null(adj))
+  n <- attr(pars, "maxdim")
+  
+  # adj wie text.default behandeln
+  if (length(adj) == 1)
+    adj <- c(adj, 0.5)
+  if (is.null(adj))
     adj <- c(0.5, 0.5)
-  else
-    adj <- rep(adj, length.out=2)
-  if (is.null(pos)) pos <- NA
-  if (is.null(vfont)) vfont <- NA
-  if (is.null(col)) col <- par("fg")
-  if (is.null(font)) font <- 1
-  if (is.null(density)) density <- NA
+  adj <- rep_len(adj, 2)
   
-  # recyle arguments:
-  #   which parameter has the highest dimension
-  # attention: we cannot repeat NULLs but we can repeat NAs, so we swap NULLs to NAs and
-  #            reset them to NULL above
-  lst <- list(x=x$x, y=x$y, labels=labels, pos=pos, offset=offset, vfont=vfont,
-              cex=cex, col=col, font=font, srt=srt, xpad=xpad, ypad=ypad,
-              density=density, angle=angle, bg=bg, border=border, lty=lty, lwd=lwd)
-  maxdim <- max(unlist(lapply(lst, length)))
-  
-  # recycle all params to maxdim
-  lgp <- lapply(lst, rep, length.out=maxdim )
-  lgp$adj <- as.list(data.frame(replicate(adj, n=maxdim)))
-  
-  for( i in 1:maxdim){
-    .boxedText(
-      x=lgp$x[i], y=lgp$y[i], labels=lgp$labels[i], adj=lgp$adj[[i]], pos=lgp$pos[i], offset=lgp$offset[i]
-      , vfont=lgp$vfont[i], cex=lgp$cex[i], col=lgp$col[i], font=lgp$font[i]
-      , srt=lgp$srt[i], xpad=lgp$xpad[i], ypad=lgp$ypad[i], density=lgp$density[i]
-      , angle=lgp$angle[i], bg=lgp$bg[i], border=lgp$border[i], lty=lgp$lty[i], lwd=lgp$lwd[i] )
+  # ------------------------------------------------------------
+  # Hauptschleife
+  # ------------------------------------------------------------
+  for (i in seq_len(n)) {
+    
+    xi  <- pars$x[i]
+    yi  <- pars$y[i]
+    lab <- pars$labels[i]
+    
+    # --- Mittelpunkt in Inches (log-stabil) ---
+    xi_in <- grconvertX(xi, from = "user", to = "inches")
+    yi_in <- grconvertY(yi, from = "user", to = "inches")
+    
+    # --- Textdimensionen in Inches ---
+    w_in <- strwidth(lab,
+                     cex = pars$cex[i],
+                     font = pars$font[i],
+                     vfont = vfont,
+                     units = "inches")
+    
+    h_in <- strheight(lab,
+                      cex = pars$cex[i],
+                      font = pars$font[i],
+                      vfont = vfont,
+                      units = "inches")
+    
+    # --- symmetrisches Padding ---
+    pad_x <- w_in * xpad
+    pad_y <- h_in * ypad
+    
+    # --- Box relativ zu adj (wie text.default) ---
+    xl <- xi_in - adj[1] * w_in - pad_x
+    xr <- xl + w_in + 2 * pad_x
+    
+    yb <- yi_in - adj[2] * h_in - pad_y
+    yt <- yb + h_in + 2 * pad_y
+    
+    # --- Rotation ---
+    theta <- pars$srt[i] * pi / 180
+    cx <- xi_in
+    cy <- yi_in
+    
+    corners_x <- c(xl, xl, xr, xr)
+    corners_y <- c(yb, yt, yt, yb)
+    
+    rot_x <- cx + (corners_x - cx) * cos(theta) -
+      (corners_y - cy) * sin(theta)
+    
+    rot_y <- cy + (corners_x - cx) * sin(theta) +
+      (corners_y - cy) * cos(theta)
+    
+    # --- zurück nach User-Koordinaten ---
+    rot_x_user <- grconvertX(rot_x, from = "inches", to = "user")
+    rot_y_user <- grconvertY(rot_y, from = "inches", to = "user")
+    
+    polygon(
+      rot_x_user,
+      rot_y_user,
+      col     = pars$bg[i],
+      density = if (is.na(pars$bg[i])) 0 else pars$density[i],
+      angle   = pars$angle[i],
+      border  = pars$border[i],
+      lty     = pars$lty[i],
+      lwd     = pars$lwd[i],
+      ...
+    )
+    
+    text(
+      xi, yi,
+      labels = lab,
+      adj    = adj,
+      pos    = pos,
+      offset = offset,
+      vfont  = vfont,
+      cex    = pars$cex[i],
+      col    = pars$col[i],
+      font   = pars$font[i],
+      srt    = pars$srt[i]
+    )
   }
+  
+  invisible()
 }
+
+
+# == internal helper functions =========================================
+
+
+.replace_text_calls <- function(expr) {
+  
+  if (is.call(expr)) {
+    
+    # Fall 1: direkter Funktionscall text(...)
+    if (identical(expr[[1]], as.name("text"))) {
+      expr[[1]] <- as.name("boxedText")
+    }
+    
+    # Fall 2: do.call("text", ...)
+    if (identical(expr[[1]], as.name("do.call"))) {
+      if (is.character(expr[[2]]) && expr[[2]] == "text") {
+        expr[[2]] <- "boxedText"
+      }
+    }
+    
+    expr[] <- lapply(expr, .replace_text_calls)
+  }
+  
+  expr
+}
+
 
 
 #' @rdname boxedText
 #' @export
-boxedText.formula <- function (formula, data = parent.frame(), ..., subset) {
+boxedText.formula <- local({
   
-  m <- match.call(expand.dots = FALSE)
-  eframe <- parent.frame()
-  md <- eval(m$data, eframe)
-  if (is.matrix(md)) 
-    m$data <- md <- as.data.frame(data)
-  dots <- lapply(m$..., eval, md, eframe)
-  m$... <- NULL
-  m <- as.list(m)
-  m[[1L]] <- stats::model.frame.default
-  m <- as.call(c(m, list(na.action = NULL)))
-  mf <- eval(m, eframe)
+  # super elegant formula implementation
+  # in fact we need nothing other, than is already implemented in 
+  # text.formula, besides the last call of boxedText() instead of text()
   
-  if (!missing(subset)) {
-    s <- eval(m$subset, data, eframe)
-    if (!missing(data)) {
-      l <- nrow(data)
-    } else {
-      mtmp <- m
-      mtmp$subset <- NULL
-      l <- nrow(eval(mtmp, eframe))
-    }
-    
-    dosub <- function(x) if (length(x) == l) 
-      x[s]
-    else x
-    
-    dots <- lapply(dots, dosub)
-  }
+  tf <- getS3method("text", "formula")
   
-  response <- attr(attr(mf, "terms"), "response")
+  new_body <- .replace_text_calls(body(tf))
   
-  if (response) {
-    varnames <- names(mf)
-    y <- mf[[response]]
-    if (length(varnames) > 2L) 
-      stop("cannot handle more than one 'x' coordinate")
-    xn <- varnames[-response]
-    if (length(xn) == 0L) 
-      do.call("boxedText", c(list(y), dots))
-    else do.call("boxedText", c(list(mf[[xn]], y), dots))
-    
-  } else stop("must have a response variable")
+  new_fun <- tf
+  body(new_fun) <- new_body
   
-}
+  new_fun
+  
+})
+
+
+
+
+
 

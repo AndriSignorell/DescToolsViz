@@ -62,7 +62,7 @@ All geometric arguments will be recycled.
 \examples{
 
 canvas(xlim = c(-5,5), xpd=TRUE)
-cols <- Pal("Helsana")[1:4]
+cols <- Pal("Helsana")[1:5]
 
 # Draw ring
 drawCircle (r.in = 1, r.out = 5, border="darkgrey", 

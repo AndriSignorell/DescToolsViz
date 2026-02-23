@@ -82,14 +82,72 @@
 }
 
 
+
+
+
 .applyParFromDots <- function(...) {
   
   dots <- list(...)
   if (!length(dots)) return(invisible())
   
-  valid <- names(par(no.readonly = TRUE))
-  dots <- dots[names(dots) %in% valid]
+  dots <- dots[!is.na(names(dots))]
   
+  # ------------------------------------------------------------
+  # Helper für 4-Rand-Parameter
+  # ------------------------------------------------------------
+  patch_fourpar <- function(new_val, old_val, pname) {
+    
+    # Falls benannte Übergabe (z.B. right=5)
+    if (!is.null(names(new_val))) {
+      
+      idx <- match(
+        names(new_val),
+        c("bottom","left","top","right")
+      )
+      
+      if (any(is.na(idx)))
+        stop(sprintf(
+          "%s names must be bottom, left, top, right",
+          pname
+        ))
+      
+      old_val[idx] <- new_val
+      return(old_val)
+    }
+    
+    # Falls NA-basierte Übergabe
+    new_val <- rep_len(new_val, 4)
+    idx_na <- is.na(new_val)
+    new_val[idx_na] <- old_val[idx_na]
+    
+    new_val
+  }
+  
+  # ------------------------------------------------------------
+  # mar
+  # ------------------------------------------------------------
+  if ("mar" %in% names(dots)) {
+    dots$mar <- patch_fourpar(
+      new_val = dots$mar,
+      old_val = par("mar"),
+      pname   = "mar"
+    )
+  }
+  
+  # ------------------------------------------------------------
+  # oma
+  # ------------------------------------------------------------
+  if ("oma" %in% names(dots)) {
+    dots$oma <- patch_fourpar(
+      new_val = dots$oma,
+      old_val = par("oma"),
+      pname   = "oma"
+    )
+  }
+  
+  # ------------------------------------------------------------
+  # par anwenden
+  # ------------------------------------------------------------
   if (length(dots)) {
     do.call(par, dots)
   }

@@ -50,7 +50,7 @@
 #' @importFrom grDevices rgb col2rgb rgb2hsv colors colorRampPalette adjustcolor
 #'             xy.coords heat.colors dev.size gray.colors
 #'             
-#' @importFrom utils head tail combn readRegistry
+#' @importFrom utils head tail combn readRegistry modifyList
 #' 
 #' @importFrom stats qt sd as.dendrogram dist hclust order.dendrogram filter 
 #'             relevel setNames is.ts time prop.test predict qnorm formula var

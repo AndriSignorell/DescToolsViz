@@ -41,6 +41,7 @@
 #' (inside or outside).
 #' @param offset a vector indicating how much the bars should be shifted
 #' relative to the x axis.
+#' @param col the color and to be used, possibly a vector (default in par("col")).
 #' @param \dots the dots are passed to the \code{\link{boxedText}}. 
 #' 
 #' @return returns the geometry of the labels invisibly
@@ -85,156 +86,307 @@
 #' 
 
 #' @export
-barText <- function(height, b, labels=height, beside = FALSE, horiz = FALSE,
-                    cex=par("cex"), 
-                    adj=NULL, 
-                    pos=c("topout", "topin", "mid", "bottomin", "bottomout"), 
-                    offset=0, ...) {
+barText <- function(height, b, labels = height, beside = FALSE, horiz = FALSE,
+                    cex = par("cex"),
+                    adj = NULL,
+                    pos = c("topout", "topin", "mid", "bottomin", "bottomout"),
+                    offset = 0, col = NULL, ...) {
   
-  # allow to use the more flexible boxedText instead of text here  
-  # redirection to be able to change defaults of boxedText
-  .btext <- function (x, y = NULL, labels = seq_along(x), adj = NULL, pos = NULL, 
-                      offset = 0.5, vfont = NULL, cex = 1, font = NULL, col=NULL,
-                      srt = 0, xpad = 0.2, ypad = 0.2, density = NULL, angle = 45, 
-                      border = NA, lty = par("lty"), 
-                      lwd = par("lwd"), ...) {
-    
-    boxedText(x=x, y=y, labels = labels, adj = adj, pos = pos, 
-              offset = offset, vfont = vfont, cex = cex, col=col,
-              font = font, 
-              srt = srt, xpad = xpad, ypad = ypad, density = density, angle = angle, 
-              border = border, lty = lty, 
-              lwd = lwd, ...) 
-    
+  pos <- match.arg(pos)
+  
+  ## ------------------------------------------------------------------
+  ## helper: boxed text wrapper
+  ## ------------------------------------------------------------------
+  .btext <- function(x, y = NULL, labels, adj = NULL,
+                     cex = 1, col = NULL, ...) {
+    boxedText(x = x, y = y, labels = labels,
+              adj = adj, cex = cex, col = col, ...)
   }
   
-  
-  if (is.vector(height) || (is.array(height) && (length(dim(height)) == 1))) {
+  ## ------------------------------------------------------------------
+  ## normalize input
+  ## ------------------------------------------------------------------
+  if (is.vector(height) || (is.array(height) && length(dim(height)) == 1)) {
     height <- cbind(height)
     beside <- TRUE
   }
   
+  if(!is.null(col))
+    col    <- t(matrix(rep_len(col, length(height)), nrow = nrow(height)))
+  # else leave NULL
+  
   offset <- rep_len(as.vector(offset), length(height))
   
-  pos <- match.arg(pos)
+  char_w <- par("cxy")[1] * cex
+  char_h <- par("cxy")[2] * cex
   
-  
-  if(beside){
-    if(horiz){
-      if(is.null(adj)) adj <- 0
+  ## ==================================================================
+  ## BESIDE MODE
+  ## ==================================================================
+  if (beside) {
+    
+    if (horiz) {
+      
       adjy <- 0.5
+      if (is.null(adj)) adj <- 0
       
-      if(pos=="topout"){
-        x <- height + offset + 1.2 * sign(height) * par("cxy")[1] * cex
-        adjx <- recodeX(x = factor(sign(x+offset)), "0"=1, "1"=-1, num = TRUE)
+      shift <- 1.2 * sign(height) * char_w
+      
+      x <- switch(pos,
+                  topout    = height + offset + shift,
+                  topin     = height + offset - shift,
+                  mid       = offset + height / 2,
+                  bottomin  = offset + shift,
+                  bottomout = offset - shift
+      )
+      
+      adjx <- switch(pos,
+                     topout    = -sign(height),
+                     topin     =  sign(height),
+                     mid       =  0.5,
+                     bottomin  = -sign(height),
+                     bottomout =  sign(height)
+      )
+      
+      pp <- recycle(b = b, x = x, labels = labels,
+                    adjx = adjx, adjy = adjy)
+      
+      for (i in seq_len(attr(pp, "maxdim"))) {
+        with(pp,
+             .btext(
+               x = x[i], y = b[i],
+               labels = labels[i],
+               adj = c(adjx[i], adjy[i]),
+               cex = cex, col = col, xpd = TRUE, ...
+             )
+        )
       }
-      else if(pos=="topin") {
-        x <- height + offset - 1.2 * sign(height) * par("cxy")[1] * cex
-        adjx <- recodeX(x = factor(sign(x+offset)), "1"=1, "0"=-1, num = TRUE)
-      }
-      else if(pos=="mid"){
-        x <- offset + height / 2
-        adjx <- 0.5
-      }
-      else if(pos=="bottomout") {
-        x <- offset - 1.2 * sign(height) * par("cxy")[1] * cex
-        adjx <- recodeX(x = factor(sign(x+offset)), "1"=1, "0"=-1, num = TRUE)
-      }
-      else if(pos=="bottomin") {
-        x <- offset + 1.2 * sign(height) * par("cxy")[1] * cex
-        adjx <- recodeX(x = factor(sign(x+offset)), "0"=1, "1"=-1, num = TRUE)
-      }
       
-      pp <- recycle(b=b, x=x, labels=labels, adjx=adjx, adjy=adjy)
-      
-      for(i in seq(attr(pp, "maxdim"))){
-        with(pp, .btext(y=b[i], x=x[i], labels=labels[i], 
-                        adj=c(adjx[i], adjy[i]), 
-                        cex=cex, xpd=TRUE, ...))    
-      } 
-      
-      res <- pp$x
-      
-      
-    } else {
-      
-      if(is.null(adj)) adjx <- 0.5
-      
-      if(pos=="topout")
-        y <- height + offset + sign(height) * par("cxy")[2] * cex
-      else if(pos=="topin")
-        y <- height + offset - sign(height) * par("cxy")[2] * cex
-      else if(pos=="mid")
-        y <- offset + height/2
-      if(pos=="bottomin")
-        y <- offset + sign(height) * par("cxy")[2] * cex
-      if(pos=="bottomout")
-        y <- offset - sign(height) * par("cxy")[2] * cex
-      
-      .btext(x=b, y=y, labels=labels, xpd=TRUE, cex=cex, adj=adj, ...) # 
-      
-      res <- y
-      
+      return(invisible(pp$x))
     }
     
-    # The xpd=TRUE means to not plot the text even if it is outside
-    # of the plot area and par("cxy") gives the size of a typical
-    # character in the current user coordinate system.
+    ## -------- vertical beside --------
     
+    if (is.null(adj)) adj <- 0.5
+    shift <- sign(height) * char_h
     
+    y <- switch(pos,
+                topout    = height + offset + shift,
+                topin     = height + offset - shift,
+                mid       = offset + height / 2,
+                bottomin  = offset + shift,
+                bottomout = offset - shift
+    )
     
+    .btext(x = b, y = y, labels = labels,
+           adj = adj, cex = cex, col = col,
+           xpd = TRUE, ...)
     
-  } else {
-    
-    if(horiz)
-      shift <- par("cxy")[1] * cex * .5
-    else 
-      shift <- par("cxy")[2] * cex * .25
-    
-    
-    if(pos=="topout"){
-      x <- t(apply(offset + height, 2, cumsum) + sign(height) * shift)
-      adjx <- 0
-      
-    } else if(pos=="topin") {
-      x <- t(apply(offset + height, 2, cumsum) - sign(height) * shift)
-      adjx <- 1
-      
-    } else if(pos=="mid"){
-      x <- t(apply(offset + height, 2, midx, incl.zero=TRUE, cumulate=TRUE))
-      adjx <- 0.5
-      
-    } else if(pos=="bottomin"){
-      x <- t(head(rbind(0, apply(offset + height, 2, cumsum)), -1) + sign(height) * shift)
-      adjx <- 0
-      
-    } else if(pos=="bottomout"){
-      x <- t(head(rbind(0, apply(offset + height, 2, cumsum)), -1) - sign(height) * shift)
-      adjx <- 1
-      
-    }
-    
-    if(horiz){
-      
-      if(is.null(adj)) adj <- 0.5
-      adjy <- 0.5
-      
-      .btext(labels=t(labels), x=x, y=b, cex=cex, adj=c(adjx, adjy), ...)
-      
-    } else {
-      if(is.null(adj)) adj <- 0.5
-      adjy <- adjx
-      adjx <- 0.5
-      
-      .btext(labels=t(labels), x=b, y=x, cex=cex, adj=c(adjx, adjy), ...)
-      
-    }
-    
-    res <- x
-    
+    return(invisible(y))
   }
   
-  invisible(res)
+  ## ==================================================================
+  ## STACKED MODE
+  ## ==================================================================
   
+  shift <- if (horiz) char_w * 0.5 else char_h * 0.25
+  
+  cum_height <- apply(offset + height, 2, cumsum)
+  
+  x <- switch(pos,
+              topout    = t(cum_height + sign(height) * shift),
+              topin     = t(cum_height - sign(height) * shift),
+              mid       = t(apply(offset + height, 2, midx,
+                                  incl.zero = TRUE, cumulate = TRUE)),
+              bottomin  = t(head(rbind(0, cum_height), -1) +
+                              sign(height) * shift),
+              bottomout = t(head(rbind(0, cum_height), -1) -
+                              sign(height) * shift)
+  )
+  
+  adj_base <- switch(pos,
+                     topout    = 0,
+                     topin     = 1,
+                     mid       = 0.5,
+                     bottomin  = 0,
+                     bottomout = 1
+  )
+  
+  if (is.null(adj)) adj <- 0.5
+  
+  if (horiz) {
+    .btext(x = x, y = b,
+           labels = t(labels),
+           adj = c(adj_base, 0.5),
+           cex = cex, col = col, ...)
+  } else {
+    .btext(x = b, y = x,
+           labels = t(labels),
+           adj = c(0.5, adj_base),
+           cex = cex, col = col, ...)
+  }
+  
+  invisible(x)
 }
 
+
+# barText <- function(height, b, labels=height, beside = FALSE, horiz = FALSE,
+#                     cex=par("cex"), 
+#                     adj=NULL, 
+#                     pos=c("topout", "topin", "mid", "bottomin", "bottomout"), 
+#                     offset=0, col=NULL, ...) {
+#   
+#   # allow to use the more flexible BoxedText instead of text here  
+#   # redirection to be able to change defaults of BoxedText
+#   .btext <- function (x, y = NULL, labels = seq_along(x), adj = NULL, pos = NULL, 
+#                       offset = 0.5, vfont = NULL, cex = 1, font = NULL, col=NULL,
+#                       srt = 0, xpad = 0.2, ypad = 0.2, density = NULL, angle = 45, 
+#                       border = NA, lty = par("lty"), 
+#                       lwd = par("lwd"), ...) {
+#     
+#     boxedText(x=x, y=y, labels = labels, adj = adj, pos = pos, 
+#               offset = offset, vfont = vfont, cex = cex, col=col,
+#               font = font, 
+#               srt = srt, xpad = xpad, ypad = ypad, density = density, angle = angle, 
+#               border = border, lty = lty, 
+#               lwd = lwd, ...) 
+#     
+#   }
+#   
+#   
+#   if (is.vector(height) || (is.array(height) && (length(dim(height)) == 1))) {
+#     height <- cbind(height)
+#     beside <- TRUE
+#   }
+#   
+#   col <- t(matrix(rep_len(col, length(height)), nrow=nrow(height)))
+#   
+#   offset <- rep_len(as.vector(offset), length(height))
+#   
+#   pos <- match.arg(pos)
+#   
+#   
+#   if(beside){
+#     if(horiz){
+#       if(is.null(adj)) adj <- 0
+#       adjy <- 0.5
+#       
+#       if(pos=="topout"){
+#         x <- height + offset + 1.2 * sign(height) * par("cxy")[1] * cex
+#         adjx <- recodeX(x = factor(sign(x+offset)), "0"=1, "1"=-1, num = TRUE)
+#       }
+#       else if(pos=="topin") {
+#         x <- height + offset - 1.2 * sign(height) * par("cxy")[1] * cex
+#         adjx <- recodeX(x = factor(sign(x+offset)), "1"=1, "0"=-1, num = TRUE)
+#       }
+#       else if(pos=="mid"){
+#         x <- offset + height / 2
+#         adjx <- 0.5
+#       }
+#       else if(pos=="bottomout") {
+#         x <- offset - 1.2 * sign(height) * par("cxy")[1] * cex
+#         adjx <- recodeX(x = factor(sign(x+offset)), "1"=1, "0"=-1, num = TRUE)
+#       }
+#       else if(pos=="bottomin") {
+#         x <- offset + 1.2 * sign(height) * par("cxy")[1] * cex
+#         adjx <- recodeX(x = factor(sign(x+offset)), "0"=1, "1"=-1, num = TRUE)
+#       }
+#       
+#       pp <- recycle(b=b, x=x, labels=labels, adjx=adjx, adjy=adjy)
+#       
+#       for(i in seq(attr(pp, "maxdim"))){
+#         with(pp, 
+#              .btext(y=b[i], x=x[i], labels=labels[i], 
+#                         adj=c(adjx[i], adjy[i]), 
+#                         cex=cex, xpd=TRUE, col=col, ...))    
+#       } 
+#       
+#       res <- pp$x
+#       
+#       
+#     } else {
+#       
+# 
+#       if(is.null(adj)) adjx <- 0.5
+#       
+#       if(pos=="topout")
+#         y <- height + offset + sign(height) * par("cxy")[2] * cex
+#       else if(pos=="topin")
+#         y <- height + offset - sign(height) * par("cxy")[2] * cex
+#       else if(pos=="mid")
+#         y <- offset + height/2
+#       if(pos=="bottomin")
+#         y <- offset + sign(height) * par("cxy")[2] * cex
+#       if(pos=="bottomout")
+#         y <- offset - sign(height) * par("cxy")[2] * cex
+#       
+#       .btext(x=b, y=y, labels=labels, xpd=TRUE, cex=cex, adj=adj, 
+#              col=col, ...)  
+#       
+#       res <- y
+#       
+#     }
+#     
+#     # The xpd=TRUE means to not plot the text even if it is outside
+#     # of the plot area and par("cxy") gives the size of a typical
+#     # character in the current user coordinate system.
+#     
+#     
+#     
+#     
+#   } else {
+#     
+#     if(horiz)
+#       shift <- par("cxy")[1] * cex * .5
+#     else 
+#       shift <- par("cxy")[2] * cex * .25
+#     
+#     
+#     if(pos=="topout"){
+#       x <- t(apply(offset + height, 2, cumsum) + sign(height) * shift)
+#       adjx <- 0
+#       
+#     } else if(pos=="topin") {
+#       x <- t(apply(offset + height, 2, cumsum) - sign(height) * shift)
+#       adjx <- 1
+#       
+#     } else if(pos=="mid"){
+#       x <- t(apply(offset + height, 2, midx, incl.zero=TRUE, cumulate=TRUE))
+#       adjx <- 0.5
+#       
+#     } else if(pos=="bottomin"){
+#       x <- t(head(rbind(0, apply(offset + height, 2, cumsum)), -1) + sign(height) * shift)
+#       adjx <- 0
+#       
+#     } else if(pos=="bottomout"){
+#       x <- t(head(rbind(0, apply(offset + height, 2, cumsum)), -1) - sign(height) * shift)
+#       adjx <- 1
+#       
+#     }
+#     
+#     if(horiz){
+#       
+#       if(is.null(adj)) adj <- 0.5
+#       adjy <- 0.5
+#       
+#       .btext(labels=t(labels), x=x, y=b, cex=cex, adj=c(adjx, adjy), 
+#              col=col, ...)
+#       
+#     } else {
+#       if(is.null(adj)) adj <- 0.5
+#       adjy <- adjx
+#       adjx <- 0.5
+#       
+#       .btext(labels=t(labels), x=b, y=x, cex=cex, adj=c(adjx, adjy), 
+#              col=col, ...)
+#       
+#     }
+#     
+#     res <- x
+#     
+#   }
+#   
+#   invisible(res)
+#   
+# }
+# 

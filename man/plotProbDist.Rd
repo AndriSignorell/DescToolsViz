@@ -73,7 +73,8 @@ plotProbDist(breaks=c(-10, -1, 12),
              function(x) dnorm(x, mean=2, sd=2), 
              blab="A", xlim=c(-7,10),
              main="Normal-Distribution N(2,2)",
-             col=c("deeppink4", "skyblue3"), density=c(20, 7))
+             col=c("deeppink4", "skyblue3", "deeppink4"), 
+             density=c(20, 7, 20))
 
 # same for Chi-square
 plotProbDist(breaks=c(0, 15, 35), 
