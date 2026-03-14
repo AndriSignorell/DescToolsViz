@@ -14,7 +14,17 @@
 #' @param bg Background color. Defaults to theme background or \code{par("bg")}.
 #' @param col Bar fill colors. Defaults to theme color.
 #' @param axes Logical. Should the numeric axis be drawn? Default is \code{TRUE}.
-#' @param args.grid Optional list of arguments controlling grid lines.
+#' @param yax Optional list of arguments controlling the y-axis
+#'   Supported elements include:
+#'   \describe{
+#'     \item{col}{Label color (default: \code{"black"})}
+#'     \item{col.axis}{Grid line color (default: \code{"black"})}
+#'     \item{lty}{Line type (default: \code{1})}
+#'     \item{lwd}{Line width (default: \code{1})}
+#'     \item{fm}{Format for the tickmark labels (default: \code{NULL})}
+#'   }
+#'   Grid orientation is determined automatically.
+#' @param grid Optional list of arguments controlling grid lines.
 #'   Supported elements include:
 #'   \describe{
 #'     \item{col}{Grid line color (default: \code{"grey85"})}
@@ -22,14 +32,14 @@
 #'     \item{lwd}{Line width (default: \code{1})}
 #'   }
 #'   Grid orientation is determined automatically.
-#' @param args.text Optional list of arguments passed to \code{\link{barText}}
+#' @param text Optional list of arguments passed to \code{\link{barText}}
 #'   to draw value labels. Common arguments include:
 #'   \describe{
 #'     \item{labels}{Text labels (default: \code{height})}
 #'     \item{pos}{Position of labels (default: \code{"mid"})}
 #'     \item{offset}{Offset from bar (default: \code{0})}
 #'   }
-#' @param args.connlines Optional list of arguments controlling connecting
+#' @param connlines Optional list of arguments controlling connecting
 #'   lines between stacked bars. Only supported when \code{beside = FALSE}.
 #'   Typical elements include:
 #'   \describe{
@@ -70,13 +80,13 @@
 #' # Stacked barplot with labels and connecting lines
 #' m <- matrix(c(3,2,4,1,5,2), nrow = 2)
 #' plotBar(m,
-#'         args.text = list(pos = "mid"),
-#'         args.connlines = list(col = "black"))
+#'         text = list(pos = "mid"),
+#'         connlines = list(col = "black"))
 #'
 #' plotBar(VADeaths, ylim=c(0,250),
-#'         args.grid=list(col = "grey", lty="dotted"), 
+#'         grid=list(col = "grey", lty="dotted"), 
 #'         las=1, main="MyTitle", 
-#'         args.text = list(labels=VADeaths, 
+#'         text = list(labels=VADeaths, 
 #'         border = NA, srt=45, bg="navajowhite"))
 #'
 #' plotBar(VADeaths, ylim=c(0,80),
@@ -84,7 +94,7 @@
 #'         box=FALSE, 
 #'         col=gray.colors(nrow(VADeaths)),
 #'         beside=TRUE, 
-#'         args.text = list(col="red", bg=alpha("white", 0.7), border=NA))
+#'         text = list(col="red", bg=alpha("white", 0.7), border=NA))
 #' 
 #' ptab <- proportions(VADeaths, margin=2)
 #' plotBar(ptab,
@@ -92,12 +102,19 @@
 #'         box=FALSE, horiz=TRUE, 
 #'         col=(cols <- gray.colors(nrow(VADeaths))),
 #'         beside=FALSE, mar=c(right=10),
-#'         args.text = list(labels=fm(ptab, fmt="%"), border=NA, 
-#'                          col=contrastColor(cols)))
+#'         text = list(labels=fm(ptab, fmt="%"), border=NA, 
+#'                     col=contrastColor(cols)))
 #' legend(x="right", fill=cols, legend=rownames(VADeaths))
 #' 
-#' plotBar(VADeaths, args.connlines = list(lwd=1, col="blue"), 
-#' box=FALSE, las=1, main="Connecting Lines")
+#' plotBar(VADeaths, connlines = list(lwd=1, col="blue"), 
+#'         box=FALSE, las=1, main="Connecting Lines")
+#' 
+#' plotBar(VADeaths/1e3,  box=FALSE, bg="lightyellow", main="VADeaths",
+#'         horiz=TRUE, 
+#'         text=list(border=FALSE, cex=0.8, col=c("blue", "green","orange")), 
+#'         mar=c(right=8), 
+#'         yax = list(fmt="%", d=0, big=",", 
+#'                    col="red", col.axis="blue", lwd=2))
 #' 
 
 
@@ -118,11 +135,12 @@ plotBar <- function(height,
                     grid = NULL,
                     text = NULL,
                     connlines = NULL,
+                    stamp = TRUE,
                     ...) {
   
   .withGraphicsState({
     
-    `%||%` <- function(a, b) if (!is.null(a)) a else b
+    # `%||%` <- function(a, b) if (!is.null(a)) a else b
     
     th <- .getTheme()
     
@@ -140,23 +158,25 @@ plotBar <- function(height,
     labels <- .getBarplotAxisLabels(height, dots)
     
     # --- Margin-Korrekturen ---
-    if (horiz) {
+    if (horiz && !(par("yaxt")=="n")) {
       .adjustLeftMarginForLabels(labels)
     }
     
-    if (!horiz && las == 2) {
+    if (!horiz && las == 2 && !(par("xaxt")=="n")) {
       .adjustBottomMarginForLas2(labels)
     }
     
     par(bg = bg)
     
     # --- Setup (unsichtbar) ---
-    mids <- barplot(height,
-                    col = NA,
-                    border = NA,
-                    axes = FALSE,
-                    ...)
-    
+    dots[c("col","border","axes")] <- NULL
+    b <- do.call(barplot, c(list(
+                     height, 
+                     col=NA, 
+                     border=NA, 
+                     axes=FALSE), 
+                     dots))
+
     # --- GRID Layer ---
     if (!is.null(grid)) {
       
@@ -189,11 +209,11 @@ plotBar <- function(height,
     }
     
     # --- echte Balken ---
-    b <- barplot(height,
-                 col = col,
-                 add = TRUE,
-                 axes = FALSE,
-                 ...)
+    barplot(height,
+            col = col,
+            add = TRUE,
+            axes = FALSE,
+            ...)
     
     # --- Zero-Linie nach Balken ---
     # ******* ???? do we need a zero line ???? ************
@@ -238,7 +258,7 @@ plotBar <- function(height,
           warn = TRUE
         )
         
-        do.call(.barConnLines, connlines)
+        do.call(.drawConnLines, connlines)
       }
     }
     
@@ -271,11 +291,16 @@ plotBar <- function(height,
 
         
     # draw box if box != FALSE || NA
-    .callIf(graphics::box, box)
+    .callIf(graphics::box, 
+            box,
+            defaults=list(which="plot"))
     
     invisible(b)
     
-  })
+  }, stamp=stamp)
+  
+  return(b)
+  
 }
 
 
@@ -317,17 +342,8 @@ plotBar <- function(height,
   
   axis <- axis[names(axis) != "labels"]
   
-  # # intuitive Interpretation
-  # if ("col" %in% names(axis)) {
-  #   
-  #   # wenn col.axis nicht gesetzt ist → Textfarbe übernehmen
-  #   if (!("col.axis" %in% names(axis)))
-  #     axis$col.axis <- axis$col
-  #   
-  #   # col bleibt für Achsenlinie
-  # }
-  
-  # intuitive Interpretation
+  # intuitive interpretation
+  # col is the color of the axis labels, col.axis the one of the axis
   has_col      <- "col" %in% names(axis)
   has_col_axis <- "col.axis" %in% names(axis)
 
@@ -382,12 +398,12 @@ plotBar <- function(height,
 .drawGridY <- function(horiz, col, lty, lwd, ...) {
   abline(h = axTicks(2), col = col, lty = lty, lwd = lwd, ...)
 }
-
 .drawGridX <- function(horiz, col, lty, lwd, ...) {
   abline(v = axTicks(1), col = col, lty = lty, lwd = lwd, ...)
 }
 
-.barConnLines <- function(height, b, horiz = FALSE,
+
+.drawConnLines <- function(height, b, horiz = FALSE,
                           width = 1,
                           col = 1, lwd = 1, lty = 2, ...) {
   
@@ -437,72 +453,6 @@ plotBar <- function(height,
   invisible()
 }
 
-# options(DescToolsX.theme = list(
-#   bg        = "white",
-#   col       = "grey70",
-#   border    = "white",
-#   grid      = TRUE,
-#   grid.col  = "grey85",
-#   grid.lty  = 1,
-#   grid.lwd  = 1
-# ))
-
-
-.getTheme <- function() {
-  th <- getOption("DescToolsX.theme")
-  if (is.null(th))
-    th <- list()
-  th
-}
-
-
-.adjustLeftMarginForLabels <- function(labels) {
-  
-  if (is.null(labels) || !length(labels))
-    return(invisible())
-  
-  w <- max(strwidth(labels,
-                    units = "inches",
-                    cex = par("cex.axis")))
-  
-  lineHeight <- par("csi") * par("mex")
-  
-  needed <- ceiling(w / lineHeight) + 1
-  
-  mar <- par("mar")
-  
-  if (needed > mar[2]) {
-    mar[2] <- needed
-    par(mar = mar)
-  }
-  
-  invisible()
-}
-
-
-
-.adjustBottomMarginForLas2 <- function(labels) {
-  
-  if (is.null(labels) || !length(labels))
-    return(invisible())
-  
-  w <- max(strwidth(labels,
-                    units = "inches",
-                    cex = par("cex.axis")))
-  
-  lineHeight <- par("csi") * par("mex")
-  
-  needed <- ceiling(w / lineHeight) + 1
-  
-  mar <- par("mar")
-  
-  if (needed > mar[1]) {
-    mar[1] <- needed
-    par(mar = mar)
-  }
-  
-  invisible()
-}
 
 
 .getBarplotAxisLabels <- function(height, dots) {
@@ -518,3 +468,4 @@ plotBar <- function(height,
   
   names(height)
 }
+

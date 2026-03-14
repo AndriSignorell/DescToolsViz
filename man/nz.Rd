@@ -19,3 +19,5 @@ Returns all non-zero elements of a vector.
 This is a convenience function primarily intended for use in
 model formulas or quick vector filtering.
 }
+\concept{zero utilities}
+\concept{zero-handling}

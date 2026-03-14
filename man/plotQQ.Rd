@@ -13,8 +13,9 @@ plotQQ(
   datax = FALSE,
   add = FALSE,
   conf.level = 0.95,
-  args.cband = NULL,
+  cband = TRUE,
   args.qqline = NULL,
+  grid = NULL,
   ...
 )
 }
@@ -42,7 +43,7 @@ existing plot; defaults to \code{FALSE}.}
 The confidence intervals are calculated pointwise method based on a
 Kolmogorov-Smirnov distribution.}
 
-\item{args.cband}{list of arguments for the confidence band, such as color
+\item{cband}{list of arguments for the confidence band, such as color
 or border (see \code{\link{drawBand}}).}
 
 \item{args.qqline}{arguments for the qqline. This will be estimated as a
@@ -54,6 +55,14 @@ values. Also the method for calculating the quantiles can be defined
 (default is 7, see \code{\link{quantile}}). The line defaults are set to
 \code{col = par("fg")}, \code{lwd = par("lwd")} and \code{lty = par("lty")}.
 No line will be plotted if \code{args.qqline} is set to \code{NA}.}
+
+\item{grid}{Optional list of arguments controlling grid lines.
+Supported elements include:
+\describe{
+\item{col}{Grid line color (default: \code{"grey85"})}
+\item{lty}{Line type (default: \code{1})}
+\item{lwd}{Line width (default: \code{1})}
+}}
 
 \item{\dots}{the dots are passed to the plot function.}
 }

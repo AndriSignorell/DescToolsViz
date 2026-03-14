@@ -9,10 +9,12 @@ plotBar(
   bg = NULL,
   col = NULL,
   axes = TRUE,
+  yax = NULL,
   box = FALSE,
   grid = NULL,
-  args.text = NULL,
-  args.connlines = NULL,
+  text = NULL,
+  connlines = NULL,
+  stamp = TRUE,
   ...
 )
 }
@@ -26,9 +28,29 @@ Passed directly to \code{\link[graphics]{barplot}}.}
 
 \item{axes}{Logical. Should the numeric axis be drawn? Default is \code{TRUE}.}
 
+\item{yax}{Optional list of arguments controlling the y-axis
+Supported elements include:
+\describe{
+\item{col}{Label color (default: \code{"black"})}
+\item{col.axis}{Grid line color (default: \code{"black"})}
+\item{lty}{Line type (default: \code{1})}
+\item{lwd}{Line width (default: \code{1})}
+\item{fm}{Format for the tickmark labels (default: \code{NULL})}
+}
+Grid orientation is determined automatically.}
+
 \item{box}{logical, defining if a box should be drawn or not}
 
-\item{args.text}{Optional list of arguments passed to \code{\link{barText}}
+\item{grid}{Optional list of arguments controlling grid lines.
+Supported elements include:
+\describe{
+\item{col}{Grid line color (default: \code{"grey85"})}
+\item{lty}{Line type (default: \code{1})}
+\item{lwd}{Line width (default: \code{1})}
+}
+Grid orientation is determined automatically.}
+
+\item{text}{Optional list of arguments passed to \code{\link{barText}}
 to draw value labels. Common arguments include:
 \describe{
 \item{labels}{Text labels (default: \code{height})}
@@ -36,7 +58,7 @@ to draw value labels. Common arguments include:
 \item{offset}{Offset from bar (default: \code{0})}
 }}
 
-\item{args.connlines}{Optional list of arguments controlling connecting
+\item{connlines}{Optional list of arguments controlling connecting
 lines between stacked bars. Only supported when \code{beside = FALSE}.
 Typical elements include:
 \describe{
@@ -47,15 +69,6 @@ Typical elements include:
 
 \item{...}{Additional arguments passed to \code{\link[graphics]{barplot}}
 and graphical parameters (via \code{par()}).}
-
-\item{args.grid}{Optional list of arguments controlling grid lines.
-Supported elements include:
-\describe{
-\item{col}{Grid line color (default: \code{"grey85"})}
-\item{lty}{Line type (default: \code{1})}
-\item{lwd}{Line width (default: \code{1})}
-}
-Grid orientation is determined automatically.}
 }
 \value{
 Invisibly returns the midpoints of the bars
@@ -94,13 +107,13 @@ plotBar(1:5,
 # Stacked barplot with labels and connecting lines
 m <- matrix(c(3,2,4,1,5,2), nrow = 2)
 plotBar(m,
-        args.text = list(pos = "mid"),
-        args.connlines = list(col = "black"))
+        text = list(pos = "mid"),
+        connlines = list(col = "black"))
 
 plotBar(VADeaths, ylim=c(0,250),
-        args.grid=list(col = "grey", lty="dotted"), 
+        grid=list(col = "grey", lty="dotted"), 
         las=1, main="MyTitle", 
-        args.text = list(labels=VADeaths, 
+        text = list(labels=VADeaths, 
         border = NA, srt=45, bg="navajowhite"))
 
 plotBar(VADeaths, ylim=c(0,80),
@@ -108,7 +121,7 @@ plotBar(VADeaths, ylim=c(0,80),
         box=FALSE, 
         col=gray.colors(nrow(VADeaths)),
         beside=TRUE, 
-        args.text = list(col="red", bg=alpha("white", 0.7), border=NA))
+        text = list(col="red", bg=alpha("white", 0.7), border=NA))
 
 ptab <- proportions(VADeaths, margin=2)
 plotBar(ptab,
@@ -116,12 +129,19 @@ plotBar(ptab,
         box=FALSE, horiz=TRUE, 
         col=(cols <- gray.colors(nrow(VADeaths))),
         beside=FALSE, mar=c(right=10),
-        args.text = list(labels=fm(ptab, fmt="\%"), border=NA, 
-                         col=contrastColor(cols)))
+        text = list(labels=fm(ptab, fmt="\%"), border=NA, 
+                    col=contrastColor(cols)))
 legend(x="right", fill=cols, legend=rownames(VADeaths))
 
-plotBar(VADeaths, args.connlines = list(lwd=1, col="blue"), 
-box=FALSE, las=1, main="Connecting Lines")
+plotBar(VADeaths, connlines = list(lwd=1, col="blue"), 
+        box=FALSE, las=1, main="Connecting Lines")
+
+plotBar(VADeaths/1e3,  box=FALSE, bg="lightyellow", main="VADeaths",
+        horiz=TRUE, 
+        text=list(border=FALSE, cex=0.8, col=c("blue", "green","orange")), 
+        mar=c(right=8), 
+        yax = list(fmt="\%", d=0, big=",", 
+                   col="red", col.axis="blue", lwd=2))
 
 }
 \seealso{

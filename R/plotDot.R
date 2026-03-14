@@ -1,361 +1,425 @@
 
-#' Cleveland's Dot Plots
-#' 
-#' Draw a Cleveland dot plot. This is an extended version of
-#' \code{\link{dotchart}} with an added option for error bars, an \code{add}
-#' argument and several more options. \code{PlotCI()} is a small helpfunction
-#' to facilitate ci-plots of several models.
-#' 
-#' Dot plots are a reasonable substitute for bar plots. This function is
-#' invoked to produce dotplots as described in Cleveland (1985).
-#' 
-#' For \code{plotDotCI()} the dots are a list of matrices with 3 columns,
-#' whereas the first is the coefficent, the second the lower and the third the
-#' upper end of the confidence interval.
-#' 
-#' @name plotDot
-#' @aliases plotDot plotDotCI
-#' @param x either a vector or matrix of numeric values (\code{NA}s are
-#' allowed).  If \code{x} is a matrix the overall plot consists of juxtaposed
-#' dotplots for each row.  Inputs which satisfy \code{\link{is.numeric}(x)} but
-#' not \code{is.vector(x) || is.matrix(x)} are coerced by
-#' \code{\link{as.numeric}}, with a warning.
-#' @param labels a vector of labels for each point.  For vectors the default is
-#' to use \code{names(x)} and for matrices the row labels
-#' \code{dimnames(x)[[1]]}.
-#' @param groups an optional factor indicating how the elements of \code{x} are
-#' grouped.  If \code{x} is a matrix, \code{groups} will default to the columns
-#' of \code{x}.
-#' @param gdata data values for the groups.  This is typically a summary such
-#' as the median or mean of each group.
-#' @param cex the character size to be used.  Setting \code{cex} to a value
-#' smaller than one can be a useful way of avoiding label overlap.  Unlike many
-#' other graphics functions, this sets the actual size, not a multiple of
-#' \code{par("cex")}.
-#' @param pch the plotting character or symbol to be used. Default is 21.
-#' @param gpch the plotting character or symbol to be used for group values.
-#' @param bg the background color of plotting characters or symbols to be used;
-#' use \code{\link{par}(bg= *)} to set the background color of the whole plot.
-#' @param color the color(s) to be used for points and labels.
-#' @param gcolor the single color to be used for group labels and values.
-#' @param lcolor the color(s) to be used for the horizontal lines.
-#' @param lblcolor the color(s) to be used for labels.
-#' @param xlim horizontal range for the plot, see \code{\link{plot.window}},
-#' e.g.
-#' @param main overall title for the plot, see \code{\link{title}}.
-#' @param xlab,ylab axis annotations as in \code{title}.
-#' @param xaxt a character which specifies the x axis type. Specifying
-#' \code{"n"} suppresses plotting of the axis.
-#' @param yaxt a character which specifies the y axis type. Specifying
-#' \code{"n"} suppresses plotting of the axis.
-#' @param add logical specifying if bars should be added to an already existing
-#' plot; defaults to \code{FALSE}.
-#' @param args.errbars optional arguments for adding error bars. All arguments
-#' for \code{\link{errBars}} can be supplied. If left to \code{NULL} (default),
-#' no error bars will be plotted.
-#' @param cex.axis The magnification to be used for axis annotation relative to
-#' the current setting of cex.
-#' @param cex.pch The magnification to be used for plot symbols relative to the
-#' current setting of cex.
-#' @param cex.gpch The magnification to be used for group symbols relative to
-#' the current setting of cex.
-#' @param gshift the number of characters, for which the grouplabels should be
-#' shift to the left compared to the sublabels.
-#' @param automar logical (default \code{TRUE}), defining if the left margin
-#' should be set according to the width of the given labels, resp. grouplabels.
-#' If set to \code{FALSE} the margins are taken from \code{par("mar")}.
-#' @param \dots \link{graphical parameters} can also be specified as arguments.
-#' @param grp an integer, defining if the the coefficients should be grouped
-#' along the first or the second dimension (default is 1).
-#' @return Return the y-values used for plotting.
-#' @author R-Core with some extensions by Andri Signorell
-#' <andri@@signorell.net>
-#' @seealso \code{\link{dotchart}}, \code{\link{plotDotCI}}
-#' @references Becker, R. A., Chambers, J. M. and Wilks, A. R. (1988) \emph{The
-#' New S Language}.  Wadsworth & Brooks/Cole.
-#' 
-#' Cleveland, W. S. (1985) \emph{The Elements of Graphing Data.} Monterey, CA:
-#' Wadsworth.
-#' 
-#' Murrell, P. (2005) \emph{R Graphics}. Chapman & Hall/CRC Press.
-#' @keywords hplot
+#' Dot Plot with Optional Confidence Intervals
+#'
+#' Draws a dot plot for numeric values with optional confidence intervals.
+#' The function accepts vectors, matrices, or 3-dimensional arrays. Internally
+#' the data are normalized to an array of dimension
+#' \code{items × (est, low, high) × groups}.
+#'
+#' If lower and upper bounds are supplied, horizontal confidence intervals are
+#' drawn with capped ends. Items are arranged vertically and may optionally be
+#' grouped.
+#'
+#' @param x Numeric data. Can be
+#'   \itemize{
+#'     \item a numeric vector (estimates only),
+#'     \item a matrix with 1 column (estimates) or 3 columns (estimate, lower,
+#'       upper),
+#'     \item a 3D array of dimension
+#'       \code{items × (est, low, high) × groups}.
+#'   }
+#' @param items Optional labels for the items (rows).
+#'   Defaults to \code{dimnames(x)[[1]]} if available.
+#' @param groups Optional group labels. Defaults to
+#'   \code{dimnames(x)[[3]]} if present.
+#' @param main Main title of the plot.
+#' @param xlim Limits for the horizontal axis.
+#' @param gap Vertical spacing between groups.
+#' @param axes Logical; if \code{TRUE} axes are drawn.
+#' @param xax Optional specification of the x-axis. Passed to
+#'   \code{\link{.drawAxis}}.
+#' @param yax Optional specification of the y-axis.
+#' @param box Logical; if \code{TRUE} a box is drawn around the plotting region.
+#' @param grid Logical; if \code{TRUE} horizontal grid lines are drawn.
+#' @param pch Plotting symbol specification for the points. May be a single
+#'   value or a list of graphical parameters passed to
+#'   \code{\link[graphics]{points}}.
+#' @param col Colour used for points and confidence intervals.
+#' @param ... Additional graphical parameters passed to \code{\link{par}} via
+#'   \code{.applyParFromDots()}.
+#'
+#' @details
+#' Graphical defaults may also be controlled globally through
+#' \code{options(DescToolsX.theme = list(...))}. Values supplied as arguments
+#' take precedence over theme settings.
+#'
+#' @return Invisibly returns a list with the vertical layout positions used in
+#' the plot:
+#' \itemize{
+#'   \item \code{ypos} positions of items,
+#'   \item \code{group_y} positions of group labels,
+#'   \item \code{sep_y} positions of group separator lines.
+#' }
+#'
 #' @examples
+#' # simple dot plot
+#' plotDot(c(12, 18, 28, 40, 65), items = LETTERS[1:5])
+#'
+#' # dot plot with confidence intervals
+#' est  <- c(12, 18, 28, 40, 65)
+#' low  <- est - 3
+#' high <- est + 3
+#'
+#' plotDot(cbind(est, low, high), items = LETTERS[1:5])
+#'
+#' # grouped example
+#' dat <- array(c(12,18,28,40,65,
+#'                20,15,22,32,55),
+#'              dim = c(5,1,2))
+#'
+#' plotDot(dat,
+#'         items = LETTERS[1:5],
+#'         groups = c("Group A","Group B"))
+#'
+#' plotDot(
+#'   dat, main="Plot Dot VADeaths", cex.axis=0.8,
+#'   items = c("50-54","55-59","60-64","65-69","70-74"),
+#'   groups = c("Rural Male","Rural Female","Urban Male","Urban Female"),
+#'   xlim = c(0,80),
+#'   # axes=F,
+#'   # xax = list(fmt="%", d=0, big=",", col="red", tck=-0.05),
+#'   pch = list(pch=c(16, 21), col= c("green","blue"), cex=c(1,2), bg="white")
+#'   # col = c("green","blue","orange","magenta")
+#' )
 #' 
-#' plotDot(VADeaths, main = "Death Rates in Virginia - 1940")
-#' op <- par(xaxs = "i")  # 0 -- 100%
-#' plotDot(t(VADeaths), xlim = c(0,100),
-#'         main = "Death Rates in Virginia - 1940")
-#' par(op)
 #' 
-#' # add some error bars
-#' plotDot(VADeaths, main="Death Rates in Virginia - 1940", col="red", pch=21,
-#'         args.errbars = list(from=VADeaths-2, to=VADeaths+2, mid=VADeaths,
-#'                             cex=1.4))
+#' plotDot(c(12,18,28,40,65), # groups="", 
+#'         items=LETTERS[1:5], pch=list(cex=1.5), main="Title")
 #' 
-#' # add some other values
-#' plotDot(VADeaths+3, pch=15, col="blue", add=TRUE)
 #' 
-#' # same as plotDotCI
-#' fit <- lm(Fertility ~ ., swiss)
-#' xci <- cbind(coef(fit), confint(fit))[-1, ]
-#' plotDot(xci[,1], main="Fertility Fit", pch=21, bg="grey80", col="black",
-#'         args.errbars = list(from=xci[,2], to=xci[,3], 
-#'                  mid=xci[,1], lwd=2, col="grey40", cex=1.5))
-#' 
-#' plotDot(VADeaths, main="Death Rates in Virginia - 1940", pch="|", 
-#'         lcolor = "navajowhite3", col="deeppink4",
-#'         args.errbars = list(from=VADeaths-2, to=VADeaths+2, mid=VADeaths,
-#'                             cex=1.3, lwd=8, code=0, col="green"))
-#' 
-#' # Setting the colours
-#' # define some error bars first
-#' lci <- sweep(x = VADeaths, MARGIN = 2, FUN = "-", 1:4)
-#' uci <- sweep(x = VADeaths, MARGIN = 1, FUN = "+", 1:5)
-#' 
-#' plotDot(VADeaths, main="This should only show how to set the colours, not be pretty",
-#'         pch=21, col=c("blue","grey"), bg=c("red", "yellow"),
-#'         gcolor = c("green", "blue", "orange", "magenta"), gdata=c(10,20,30,40),
-#'         gpch = c(15:18), lcolor = "orange",
-#'         args.errbars = list(from=lci, to=uci, mid=VADeaths, cex=1.4))
-#' 
+#' plotDot(
+#'   cbind(est[, 1], low[, 1], high[,1]), 
+#'   items=LETTERS[1:5])
+#'   
 
 
-#' @rdname plotDot
 #' @export
-plotDot <- function (x, labels = NULL, groups = NULL, gdata = NULL, cex = par("cex"),
-                     pch = 21, gpch = 21, bg = par("bg"), color = par("fg"), gcolor = par("fg"),
-                     lcolor = "gray", lblcolor = par("fg"), xlim = NULL, main = NULL, xlab = NULL, ylab = NULL, xaxt=NULL, yaxt=NULL,
-                     add = FALSE, args.errbars = NULL, cex.axis=par("cex.axis"), cex.pch=1.2, 
-                     cex.gpch=1.2, gshift=2, automar=TRUE, ...) {
+plotDot <- function(x, 
+                    items = NULL,
+                    groups = NULL,
+                    main=NULL, 
+                    xlim = NULL,
+                    gap = 1,
+                    axes = TRUE,
+                    xax = NULL, 
+                    yax = NULL, 
+                    box = TRUE,
+                    grid = TRUE,
+                    pch = NULL, 
+                    # col = NULL,
+                    ...) {
+
   
-  ErrBarArgs <- function(from, to = NULL, pos = NULL, mid = NULL,
-                         horiz = FALSE, col = par("fg"), lty = par("lty"), lwd = par("lwd"),
-                         code = 3, length = 0.05, pch = NA, cex.pch = par("cex"),
-                         col.pch = par("fg"), bg.pch = par("bg"), ...) {
+  th <- .theme(
     
-    if (is.null(to)) {
-      if (length(dim(x) != 1))
-        stop("'to' must be be provided, if x is a matrix.")
+    grid = grid,
+    pch  = pch
+  )
+  
+  
+  grid <- th$grid
+  pch  <- th$pch
+  
+  
+  x <- .normalizeDotData(x)
+  
+  nm <- .resolveNames(x, items, groups)
+  items  <- nm$items
+  groups <- nm$groups
+  
+  if (dim(x)[3] == 1 && missing(groups))
+    groups <- NULL
+
+  
+  .withGraphicsState({
+
+    .applyParFromDots(...)
+    
+    if(length(dim(x)) != 3)
+      stop("x must be age x (est,low,high) x group")
+    
+    nx <- dim(x)[1]
+    ng   <- dim(x)[3]
+    
+    drawGroupHeader <- ng > 1 
+    header <- if (drawGroupHeader) 1 else 0
+    
+    if(is.null(items))
+      items <- seq_len(nx)
+    
+    if(is.null(groups))
+      groups <- paste("Group", seq_len(ng))
+    
+    if(is.null(xlim))
+      xlim <- range(x, na.rm = TRUE)
+    
+    # --------------------------------
+    # Margin automatisch anpassen
+    # --------------------------------
+    
+    .adjustLeftMarginForLabels(c(groups, items), pad=1)
+    
+    
+    # --------------------------------
+    # Y layout
+    # --------------------------------
+    
+    ypos    <- vector("list", ng)
+    sep_y   <- numeric(ng)
+    group_y <- numeric(ng)
+    
+    base <- 0
+    
+    for(g in seq_len(ng)) {
       
-      if (!dim(from)[2] %in% c(2, 3))
-        stop("'from' must be a kx2 or a kx3 matrix, when 'to' is not provided.")
-      if (dim(from)[2] == 2) {
-        to <- from[, 2]
-        from <- from[, 1]
-      }
-      else {
-        mid <- from[, 1]
-        to <- from[, 3]
-        from <- from[, 2]
-      }
+      # ypos[[g]]    <- base + seq_len(nx)
+      ypos[[g]]    <- base + rev(seq_len(nx))
+      sep_y[g]     <- base + nx + header
+      group_y[g]   <- base + nx + header
+      
+      base <- base + nx + gap + header
     }
     
-    if (length(dim(from)) ==2 )
-      from <- from[, ncol(from):1]
-    if (length(dim(to)) ==2 )
-      to <- to[, ncol(to):1]
-    if (length(dim(mid)) ==2 )
-      mid <- mid[, ncol(mid):1]
+    ymax <- base - gap - header
     
-    return(list(from = from, to = to, mid = mid, col = col,
-                col.axis = 1, lty = lty, lwd = lwd, angle = 90, code = code,
-                length = length, pch = pch, cex.pch = cex.pch, col.pch = col.pch,
-                bg.pch = bg.pch))
-  }
-  
-  # if(!is.null(args.errbars)){
-  #   # switch pch and col to errorbars
-  #   if(!is.null(pch)){
-  #     args.errbars$pch <- pch
-  #     args.errbars$col.pch <- color
-  #     args.errbars$bg.pch <- bg
-  #     bg <- color <- pch <- NA
-  #   }
-  # }
-  
-  x <- x[length(x):1]
-  
-  labels <- rev(labels)
-  groups <- rev(groups)
-  lcolor <- rev(lcolor)
-  lblcolor <- rev(lblcolor)
-  color <- rev(color)
-  pch <- rev(pch)
-  bg <- rev(bg)
-  
-  # cex <- rep(cex, length.out = 3)
-  cex.axis <- rep(cex.axis, length.out = 3)
-  
-  if (!is.null(args.errbars))
-    errb <- do.call(ErrBarArgs, args.errbars)
-  if (!add && is.null(xlim)) {
-    if (is.null(args.errbars)) {
-      xlim <- range(x[is.finite(x)])
-    }
-    else {
-      rng <- c(errb$from, errb$to)
-      xlim <- range(pretty(rng[is.finite(rng)]))
-    }
-  }
-  opar <- par("mai", "mar", "cex", "cex.axis", "yaxs")
-  on.exit(par(opar))
-  par(cex = cex, cex.axis=cex.axis[1], yaxs = "i")
-  
-  lheight <- strheight("M", units="inches", cex=max(cex.axis[c(2, 3)])*cex)
-  
-  if (!is.numeric(x))
-    stop("'x' must be a numeric vector or matrix")
-  n <- length(x)
-  if (is.matrix(x)) {
-    if (is.null(labels))
-      labels <- rownames(x)
-    if (is.null(labels))
-      labels <- as.character(1L:nrow(x))
-    labels <- rep_len(labels, n)
-    if (is.null(groups))
-      groups <- col(x, as.factor = TRUE)
-    glabels <- levels(groups)
     
-  } else {
-    if (is.null(labels))
-      labels <- names(x)
-    glabels <- if (!is.null(groups))
-      levels(groups)
-    if (!is.vector(x)) {
-      warning("'x' is neither a vector nor a matrix: using as.numeric(x)")
-      x <- as.numeric(x)
-    }
-  }
-  
-  if (!add)
+    # --------------------------------
+    # Plot
+    # --------------------------------
+    
     plot.new()
-  # we must use cex*cex.axis here
-  linch <- if (!is.null(labels))
-    max(strwidth(labels, "inch", cex=max(cex.axis[2])* cex), na.rm = TRUE)
-  else 0
-  
-  if (is.null(glabels)) {
-    goffset <- ginch <- 0
     
-  } else {
-    ginch <- max(strwidth(glabels, "inch", cex=max(cex.axis[3]) * cex), na.rm = TRUE)
-    goffset <- lheight  
-  }
-  if (!(is.null(labels) && is.null(glabels) || identical(yaxt, "n") || !automar)) {
-    nmai <- par("mai")
-    # nmai[2L] <- nmai[4L] + max(linch + goffset, ginch) + lheight
-    # warum sollte der linke Rand so sein wie der rechte??
-    nmai[2L] <- lheight + max(linch + goffset, ginch) + gshift * lheight
-    par(mai = nmai)
-  }
-  if (is.null(groups)) {
-    o <- 1L:n
-    y <- o
-    ylim <- c(0, n + 1)
+    plot.window(
+      xlim = xlim,
+      ylim = c(0, ymax + 1 + header),
+      xaxs = "r",
+      yaxs = "i"
+    )
     
-  } else {
-    o <- sort.list(as.numeric(groups), decreasing = TRUE)
-    x <- x[o]
-    groups <- groups[o]
-    # color <- rep_len(color, length(groups))[o]
-    # lcolor <- rep_len(lcolor, length(groups))[o]
-    offset <- cumsum(c(0, diff(as.numeric(groups)) != 0))
-    y <- 1L:n + 2 * offset
-    ylim <- range(0, y + 2)
-  }
-  
-  if (!add)
-    plot.window(xlim = xlim, ylim = ylim, log = "")
-  
-  # lheight <- par("csi")
-  # much more precise:
-  if (!is.null(labels)) {
-    linch <- max(strwidth(labels, "inch", cex = cex.axis[2])*cex, na.rm = TRUE)
-    #    loffset <- (linch + 0.1)/lheight
-    loffset <- grconvertX(linch + 0.1, from="inch", to="lines")
-    labs <- labels[o]
-    if (!identical(yaxt, "n") && !add)
-      mtext(labs, side = 2, line = loffset, at = y, adj = 0,
-            col = lblcolor, las = 2, cex = cex.axis[2]*cex, ...)
-  }
-  
-  if (!add)
-    abline(h = y, lty = "dotted", col = lcolor)
-  
-  if (!is.null(args.errbars)) {
-    arrows(x0 = rev(errb$from)[o], x1 = rev(errb$to)[o],
-           y0 = y, col = rev(errb$col), angle = 90, code = rev(errb$code),
-           lty = rev(errb$lty), lwd = rev(errb$lwd), length = rev(errb$length))
-    # if (!is.null(errb$mid))
-    #   points(rev(errb$mid)[o], y = y, pch = rev(errb$pch), col = rev(errb$col.pch),
-    #          cex = rev(errb$cex.pch), bg = rev(errb$bg.pch))
-  }
-  
-  points(x, y, pch = pch, col = color, bg = bg, cex=cex * cex.pch)
-  if (!is.null(groups)) {
-    gpos <- rev(cumsum(rev(tapply(groups, groups, length)) +
-                         2) - 1)
+    usr <- par("usr")
     
-    # ginch <- max(strwidth(glabels, "inch", cex=cex.axis[3]*cex), na.rm = TRUE)
-    # goffset <- (max(linch + 0.2, ginch, na.rm = TRUE) + 0.1)/lheight
     
-    #    lgoffset <- (max(linch + goffset, ginch) + lheight)/lheight
-    lgoffset <- grconvertX(max(linch + goffset, ginch) + gshift * lheight, 
-                           from="inch", to="lines")
+    # --------------------------------
+    # Grid
+    # --------------------------------
+
+    .callIf(
+      .drawDotGrid,
+      grid,
+      defaults = list(
+        ypos = ypos,
+        sep_y = sep_y,
+        drawGroupHeader = drawGroupHeader,
+        col = th$grid.col,
+        lty = th$grid.lty,
+        lwd = th$grid.lwd,
+        group.col = th$grid.group.col,
+        group.lty = th$grid.group.lty,
+        group.lwd = th$grid.group.lwd
+      )
+    )
     
-    if (!identical(yaxt, "n") && !add)
-      mtext(glabels, side = 2, line = lgoffset, at = gpos, adj = 0,
-            col = gcolor, las = 2, cex = cex.axis[3]*cex, ...)
-    if (!is.null(gdata)) {
-      abline(h = gpos, lty = "dotted")
-      points(gdata, gpos, pch = gpch, cex=cex*cex.gpch, col = gcolor, bg = bg, ...)
+    
+    # --------------------------------
+    # Axes
+    # --------------------------------
+    
+    if(isTRUE(axes)) {
+      
+      .drawAxis(1, xax)
+
+      axis(
+        2,
+        at = unlist(ypos),
+        labels = rep(items, ng),
+        las = 1
+      )
     }
-  }
-  if (!(add || identical(xaxt, "n") ))
-    axis(1)
+    
+    
+    # --------------------------------
+    # Group labels
+    # --------------------------------
+    if (drawGroupHeader) {
+      
+      x_left <- usr[1] - diff(usr[1:2]) * 0.03
+      
+      for(g in seq_len(ng)) {
+        
+        text(
+          x_left,
+          group_y[g],
+          groups[g],
+          adj = c(1,0.5),
+          xpd = NA,
+          font = 2,
+          cex = par("cex.axis")
+        )
+      }
+    }
+    
+    # draw box if box != FALSE || NA
+    .callIf(graphics::box, 
+            box,
+            defaults=list(which="plot"))
+    
+    # place main title if main != FALSE || NA
+    if(!(is.null(main) %||% main=="" %||% isNA(main)))
+      title(main=main)
+    
+ 
+    # add data
+    .addDotCI(
+      x,
+      ypos,
+      pch = pch
+    )
+
+        
+  })
   
-  if (!add)
-    box()
-  
-  if (!add)
-    title(main = main, xlab = xlab, ylab = ylab, ...)
-  
-  
-  if (!is.null(.getOption("stamp")) && !add)
-    stamp()
-  
-  # invisible(y[order(o, decreasing = TRUE)])
-  # replaced by 0.99.18:
-  invisible(y[order(y, decreasing = TRUE)])
+  invisible(list(
+    ypos = ypos,
+    group_y = group_y,
+    sep_y = sep_y
+  ))
   
 }
 
 
-#' @rdname plotDot
-#' @export
-plotDotCI <- function(..., grp=1, cex = par("cex"),
-                      pch = 21, gpch = 21, bg = par("bg"), color = par("fg"), gcolor = par("fg"),
-                      lcolor = "gray", lblcolor = par("fg"), xlim = NULL, main = NULL, xlab = NULL, ylab = NULL, xaxt=NULL, yaxt=NULL,
-                      cex.axis=par("cex.axis"), cex.pch=1.2,
-                      cex.gpch=1.2, gshift=2, automar=TRUE){
+
+.addDotCI <- function(x, ypos, pch = list(pch = 16), lwd = 1) {
   
-  lst <- list(...)
+  if (!is.list(ypos))
+    stop("ypos must be list of y-vectors")
   
-  if(grp==1)
-    z <- aperm(do.call(abind::abind, list(lst, along = 3)), c(1,3,2))
-  else
-    z <- aperm(do.call(abind::abind, list(lst, along = 3)), c(3,1,2))
+  ng <- dim(x)[3]
   
-  # ... are matrices with n rows and 3 columns, est, lci, uci
-  plotDot(z[,,1],
-          args.errbars = list(from=z[,,2], to=z[,,3]),
-          cex = cex,
-          pch = pch, gpch = gpch, bg = bg, color = color, gcolor = gcolor,
-          lcolor = lcolor, lblcolor = lblcolor, xlim = xlim, main = main,
-          xlab = xlab, ylab = ylab, xaxt=xaxt, yaxt=yaxt,
-          cex.axis=cex.axis, cex.pch=cex.pch,
-          cex.gpch=cex.gpch, gshift=gshift, automar=automar)
+  # ensure pch is a list
+  if (!is.list(pch))
+    pch <- list(pch = pch)
   
+  for (g in seq_len(ng)) {
+    
+    est  <- x[,1,g]
+    low  <- x[,2,g]
+    high <- x[,3,g]
+    
+    y <- as.numeric(ypos[[g]])
+    
+    # CI lines
+    graphics::arrows(
+      low, y, high, y,
+      col   = pch$col %||% par("fg"),
+      lwd   = lwd,
+      code  = 3,
+      angle = 90,
+      length = 0.05
+    )
+    
+    # points
+    .callIf(
+      graphics::points,
+      pch,
+      defaults = list(
+        x   = est,
+        y   = y,
+        pch = rep_len(pch$pch %||% 16, ng)[g],
+        col = rep_len(pch$col %||% par("fg"), ng)[g],
+        bg  = rep_len(pch$bg  %||% NA, ng)[g],
+        cex = rep_len(pch$cex %||% 1, ng)[g]
+      ),
+      forbidden = c("x", "y")
+    )
+    
+  }
   
+  invisible(NULL)
+}
+
+
+
+.resolveNames <- function(x, items=NULL, groups=NULL) {
+  
+  dn <- dimnames(x)
+  
+  if (is.null(items)) {
+    items <- if (!is.null(dn[[1]])) dn[[1]] else seq_len(dim(x)[1])
+  }
+  
+  if (is.null(groups)) {
+    groups <- if (!is.null(dn[[3]])) dn[[3]] else seq_len(dim(x)[3])
+  }
+  
+  list(items=items, groups=groups)
+}
+
+
+
+
+.normalizeDotData <- function(x) {
+  
+  if (is.array(x) && length(dim(x)) == 3)
+    return(x)
+  
+  # ----------------------------
+  # vector -> estimate only
+  # ----------------------------
+  
+  if (is.vector(x)) {
+    
+    out <- array(NA_real_, dim=c(length(x),3,1))
+    out[,1,1] <- x
+    
+    return(out)
+  }
+  
+  # ----------------------------
+  # matrix
+  # ----------------------------
+  
+  if (is.matrix(x)) {
+    
+    n <- nrow(x)
+    
+    if (ncol(x) == 1) {
+      
+      out <- array(NA_real_, dim=c(n,3,1))
+      out[,1,1] <- x[,1]
+      
+      return(out)
+      
+    } else if (ncol(x) == 3) {
+      
+      out <- array(NA_real_, dim=c(n,3,1))
+      out[,,1] <- x
+      
+      return(out)
+    }
+    
+    stop("Matrix must have 1 or 3 columns")
+  }
+  
+  stop("Unsupported data structure")
+}
+
+
+.drawDotGrid <- function(
+    ypos, sep_y, drawGroupHeader,
+    col = "orange", lty = 3, lwd=1,
+    group.col = "grey40", group.lty = 2, group.lwd=1
+) {
+  
+  ng <- length(ypos)
+  
+  for (g in seq_len(ng)) {
+    
+    graphics::abline(h = ypos[[g]], col = col, lty = lty)
+    
+    if (drawGroupHeader)
+      graphics::abline(h = sep_y[g], col = group.col, lty = group.lty)
+  }
+  
+  invisible(NULL)
 }
 

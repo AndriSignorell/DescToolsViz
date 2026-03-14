@@ -34,8 +34,15 @@
 #' \code{NA}, if no confidence band should be plotted.  Default is \code{0.95}.
 #' The confidence intervals are calculated pointwise method based on a
 #' Kolmogorov-Smirnov distribution. 
-#' @param args.cband list of arguments for the confidence band, such as color
+#' @param cband list of arguments for the confidence band, such as color
 #' or border (see \code{\link{drawBand}}). 
+#' @param grid Optional list of arguments controlling grid lines.
+#'   Supported elements include:
+#'   \describe{
+#'     \item{col}{Grid line color (default: \code{"grey85"})}
+#'     \item{lty}{Line type (default: \code{1})}
+#'     \item{lwd}{Line width (default: \code{1})}
+#'   }
 #' @param \dots the dots are passed to the plot function. 
 #' 
 #' @note The code is inspired by the tip 10.22 "Creating other
@@ -78,8 +85,8 @@ plotQQ <- function(x, qdist=stats::qnorm,
                    main=NULL, xlab=NULL, ylab=NULL, 
                    datax=FALSE, add=FALSE,
                    conf.level=0.95, 
-                   args.cband = NULL, 
-                   args.qqline=NULL, ...) {
+                   cband = TRUE, 
+                   args.qqline=NULL, grid=NULL, ...) {
   
 
   .withGraphicsState({
@@ -107,29 +114,46 @@ plotQQ <- function(x, qdist=stats::qnorm,
       y <- xy
     }
     
-    if(!add)
+    if(!add){
       plot(x=x, y, main=main, xlab=xlab, ylab=ylab, type="n", ...)
-    
-    # add confidence band if desired
-    if (!(is.na(conf.level) || identical(args.cband, NA)) ) {
-      
-      args.cband1 <- list(col = alpha(.getOption("palette", default = c("#8296C4", "#9A0941"))[1], 0.25), border = NA)
-      if (!is.null(args.cband))
-        args.cband1[names(args.cband)] <- args.cband
-
-      ci <- .create.qqplot.fit.confidence.interval(
-                      y, distribution = qdist, 
-                      conf=conf.level, conf.method = "pointwise");
-      
-      do.call("drawBand", c(args.cband1,
-                            list(x = c(ci$z, rev(ci$z))),
-                            list(y = c(ci$upper.pw, rev(ci$lower.pw)) )
-      ))
-      
+      .callIf(graphics::grid, grid, 
+              defaults = list(
+                  col   = "grey85",
+                  lty   = 1,
+                  lwd   = 1
+                )  )
     }
+
+    # add confidence band if desired
+    .callIf(.drawConfBandQQ,
+            cband,
+            defaults = list(
+              col    = alpha(.getOption("palette", 
+                                        default = c("#8296C4", "#9A0941"))[1], 0.25), 
+              border = NA,
+              ci     = .create.qqplot.fit.confidence.interval(
+                           y, distribution = qdist, 
+                           conf=conf.level, conf.method = "pointwise")
+            ),
+            forbidden = c("ci"),
+            warn = TRUE
+    )
     
+
     # draw points last so they stay on top of confidence band
-    points(x=x, y=y, ...)
+    do.call(points, .mergeArgs(
+      defaults = list(
+        x=x, y=y,
+        pch = 21,
+        bg = alpha("white", 0.8)
+      ),
+      user = list(...)
+      # forbidden = c("height","b","horiz","width"),
+      # warn = TRUE
+    ))
+    
+    
+    # points(x=x, y=y, ...)
     
     # John Fox implements an envelope option in car::qqplot, in the sense of:
     #   (unfortunately using ddist...)
@@ -175,7 +199,21 @@ plotQQ <- function(x, qdist=stats::qnorm,
 
 
 
+
+
+
 # == internal helper functions ========================================================
+
+
+.drawConfBandQQ <- function(col = alpha("grey", alpha = 0.5), border=NA, 
+                            ci ){
+  
+  drawBand(x = c(ci$z, rev(ci$z)),
+           y = c(ci$upper.pw, rev(ci$lower.pw)), 
+           col  = col, border = border)
+  
+}
+
 
 # The BoutrosLab.statistics.general package is copyright (c) 2012 Ontario Institute for Cancer Research (OICR)
 # This package and its accompanying libraries is free software; you can redistribute it and/or modify it under the terms of the GPL

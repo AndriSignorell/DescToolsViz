@@ -6,28 +6,18 @@
 \usage{
 \method{plot}{Desc.factor}(
   x,
-  main = NULL,
-  maxlablen = 25,
-  type = c("bar", "dot"),
-  col = NULL,
-  border = NULL,
+  col = "grey80",
+  border = FALSE,
   xlim = NULL,
+  maxlablen = 25,
   ecdf = TRUE,
+  main = NULL,
   ...
 )
 }
 \arguments{
 \item{x}{An object of class \code{"Freq"}, typically returned by
 \code{DescToolsX::freq()}.}
-
-\item{main}{Plot title. If \code{NULL}, the title stored in \code{x} is used.
-Use \code{NA} to suppress the title entirely.}
-
-\item{maxlablen}{Maximum number of characters used for category labels.
-Longer labels are truncated.}
-
-\item{type}{Character string specifying the plot type.
-Either \code{"bar"} (default) for bar charts or \code{"dot"} for dot plots.}
 
 \item{col}{Fill color(s) for bars or points. If \code{NULL}, sensible
 defaults are chosen automatically.}
@@ -38,11 +28,20 @@ is used depending on \code{type}.}
 \item{xlim}{Numeric vector of length two giving the x-axis limits.
 If \code{NULL}, limits are chosen automatically.}
 
+\item{maxlablen}{Maximum number of characters used for category labels.
+Longer labels are truncated.}
+
 \item{ecdf}{Logical. If \code{TRUE} (default) and \code{type = "bar"},
 cumulative percentages are shown in addition to individual percentages.}
 
+\item{main}{Plot title. If \code{NULL}, the title stored in \code{x} is used.
+Use \code{NA} to suppress the title entirely.}
+
 \item{...}{Graphical parameters passed to \code{par()}, such as
 \code{cex}, \code{las}, \code{mar}, or \code{oma}.}
+
+\item{type}{Character string specifying the plot type.
+Either \code{"bar"} (default) for bar charts or \code{"dot"} for dot plots.}
 }
 \value{
 Invisibly returns \code{NULL}. The function is called for its

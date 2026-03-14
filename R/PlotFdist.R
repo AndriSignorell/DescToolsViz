@@ -213,7 +213,7 @@ plotFdist <- function (x, main = deparse(substitute(x)), xlab = ""
     # if(!is.null(cex.axis)) par(cex.axis=cex.axis)
     # if(!is.null(cex.main)) par(cex.axis=cex.main)
 
-    .setDescToolsXOption(stamp=NULL)
+#    .setDescToolsXOption(stamp=NULL)
 
     .applyParFromDots(...)
     

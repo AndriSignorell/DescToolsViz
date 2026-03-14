@@ -11,7 +11,11 @@
 #'
 #' @return A vector containing only the non-zero elements of \code{x}.
 
+#' @family zero-handling
+#' @concept zero utilities
+#' 
 
+ 
 #' @export
 nz <- function(x) {
   x[!isZero(x)]
